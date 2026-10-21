@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Let's Go Out!</title>
+<style>
+:root{
+  --bg:#EEF6F3; --paper:#FFFFFF; --ink:#1F3330; --ink-soft:#64807B; --line:#DCE8E4;
+  --deep:#14504B; --deep-2:#1F6B64;
+  --coral:#EE6E4C; --coral-deep:#C24D2E; --coral-soft:#FCE3DA;
+  --teal:#2E9A8F; --teal-deep:#217A71; --teal-soft:#D9F0EC;
+  --mustard:#E3A52C; --mustard-soft:#FBEDCF;
+  --plum:#7B5EA7; --plum-soft:#EDE5F7;
+  --rose:#D9486A; --rose-soft:#FBE0E6;
+  --shadow:0 2px 0 rgba(20,60,56,.06), 0 12px 26px -14px rgba(20,60,56,.45);
+  --display:"Trebuchet MS","Segoe UI",Verdana,system-ui,sans-serif;
+  --body:"Segoe UI",Tahoma,Verdana,system-ui,-apple-system,sans-serif;
+  color-scheme: light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{background:var(--bg)}
+html{-webkit-text-size-adjust:100%}
+body{margin:0; font-family:var(--body); color:var(--ink); font-size:17px; line-height:1.5;
+  padding-inline:16px; padding-block:calc(16px + env(safe-area-inset-top,0px)) calc(48px + env(safe-area-inset-bottom,0px)); background:var(--bg)}
+img{max-width:100%}
+.app{max-width:900px; margin:0 auto; display:flex; flex-direction:column; gap:18px}
+button{font:inherit; color:inherit; cursor:pointer; -webkit-tap-highlight-color:transparent}
+button:focus-visible, textarea:focus-visible, input:focus-visible{outline:3px solid var(--coral); outline-offset:3px}
+
+/* HUD */
+.hud{position:relative; overflow:hidden; background:var(--deep); color:#fff; border-radius:26px; padding:20px 20px 72px; box-shadow:var(--shadow); display:flex; flex-direction:column; gap:14px}
+.hud > *{position:relative; z-index:2}
+.hud-top{display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px}
+.brand h1{font-family:var(--display); font-weight:700; font-size:clamp(1.55rem,5vw,2.2rem); line-height:1; margin:0; letter-spacing:.05em}
+.brand p{margin:6px 0 0; font-weight:700; font-size:1rem; color:#A7CFC8}
+.stats{display:flex; flex-wrap:wrap; gap:8px; align-items:center}
+.pill{display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,.13); border-radius:999px; padding:5px 14px; font-weight:700; font-variant-numeric:tabular-nums}
+.pill small{font-weight:700; color:#A7CFC8; font-size:.74rem; text-transform:uppercase; letter-spacing:.08em}
+.pill.score b{color:var(--mustard); font-size:1.15rem; display:inline-block}
+.pill.score b.pop{animation:pop .45s ease}
+.hearts{display:inline-flex; gap:3px; font-size:1.2rem; line-height:1}
+.hearts span{transition:filter .3s, opacity .3s, transform .3s}
+.hearts span.lost{filter:grayscale(1); opacity:.3; transform:scale(.85)}
+.progress{height:12px; background:rgba(255,255,255,.15); border-radius:999px; overflow:hidden}
+.progress div{height:100%; width:0; border-radius:999px; background:linear-gradient(90deg,var(--mustard),#F3CE7A); transition:width .5s ease}
+.hud-row{display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between}
+.map{display:flex; gap:6px; flex-wrap:wrap}
+.chip{border:2px solid rgba(255,255,255,.2); background:rgba(255,255,255,.07); color:#fff; border-radius:13px; padding:4px 9px; font-weight:700; font-size:.86rem; display:inline-flex; gap:5px; align-items:center; min-height:40px}
+.chip.cur{border-color:var(--mustard); background:rgba(227,165,44,.28)}
+.chip.done{border-color:#6FD3C4; background:rgba(111,211,196,.25)}
+.cheer{margin:0; font-weight:700; color:#0C3A36; background:#BFE7DF; border-radius:14px; padding:8px 14px; font-size:.95rem}
+.city{position:absolute; left:0; right:0; bottom:0; height:74px; width:100%; z-index:1}
+
+.btn{border:none; border-radius:16px; padding:12px 22px; font-family:var(--display); font-weight:700; font-size:1.1rem; min-height:52px; transition:transform .1s, box-shadow .1s}
+.btn:active{transform:translateY(3px)}
+.btn.primary{background:var(--mustard); color:#3D2A05; box-shadow:0 4px 0 #B07D14}
+.btn.primary:active{box-shadow:0 1px 0 #B07D14}
+.btn.primary:disabled{background:#C7D4D1; color:#7B8D8A; box-shadow:0 4px 0 #A9BAB6; cursor:not-allowed; transform:none}
+.btn.green{background:var(--teal); color:#fff; box-shadow:0 4px 0 var(--teal-deep)}
+.btn.ghost{background:var(--paper); border:2px solid var(--line); box-shadow:0 3px 0 var(--line)}
+.btn.phrases{background:var(--coral); color:#fff; box-shadow:0 4px 0 var(--coral-deep); font-size:1rem; min-height:46px; padding:8px 16px}
+
+/* stage */
+.stage{background:var(--paper); border:2px solid var(--line); border-radius:26px; padding:22px; box-shadow:var(--shadow); display:flex; flex-direction:column; gap:18px}
+.lv-head{display:flex; gap:14px; align-items:center; flex-wrap:wrap}
+.lv-badge{flex:none; width:56px; height:56px; border-radius:17px; background:var(--teal-soft); border:2px solid #AEDCD4; display:grid; place-items:center; font-size:1.7rem}
+.lv-head .eyebrow{font-size:.76rem; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--teal-deep)}
+.lv-head h2{margin:0; font-family:var(--display); font-weight:700; font-size:clamp(1.4rem,4.4vw,1.95rem); line-height:1.1; text-wrap:balance}
+.lv-head .count{margin-left:auto; font-weight:800; color:var(--ink-soft); font-variant-numeric:tabular-nums; white-space:nowrap}
+.instr{margin:0; font-size:1.02rem; color:var(--ink-soft); font-weight:600}
+.tip{margin:0; background:var(--mustard-soft); border-radius:14px; padding:10px 14px; font-weight:700; font-size:.96rem; color:#6B4D07}
+.feedback{margin:0; min-height:1.6em; font-weight:800; font-size:1.04rem; text-align:center}
+.feedback.good{color:var(--teal-deep)}
+.feedback.hint{color:var(--coral-deep)}
+.next-row{display:flex; justify-content:center; gap:12px; flex-wrap:wrap}
+
+/* quick match */
+.match{display:grid; grid-template-columns:1fr 1.4fr; gap:12px}
+.col{display:flex; flex-direction:column; gap:10px}
+.col-label{text-align:center; font-weight:800; font-size:.78rem; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft)}
+.mcard{min-height:62px; border-radius:16px; border:2.5px solid var(--line); background:#fff; box-shadow:0 3px 0 var(--line); font-family:var(--display); font-weight:700; font-size:1.05rem; padding:8px 10px; line-height:1.25; display:flex; align-items:center; justify-content:center; text-align:center; transition:background .2s, border-color .2s, transform .1s}
+.mcard.pic{font-size:2rem; background:#F4FAF8}
+.mcard.sel{border-color:var(--coral); background:var(--coral-soft); transform:translateY(-2px)}
+.mcard.found{background:var(--teal-soft); border-color:var(--teal); color:var(--teal-deep); box-shadow:none; animation:glow .8s ease; cursor:default}
+.mcard.wrong{border-color:var(--coral); background:var(--coral-soft); animation:shake .4s ease}
+
+/* generic cards + options */
+.showcard{border-radius:20px; padding:22px 18px; background:linear-gradient(180deg,#E7F3F0,#D7EBE6); border:2px solid #C9E2DC; display:flex; flex-direction:column; align-items:center; gap:10px}
+.showcard.quote{background:linear-gradient(180deg,#FFF3EC,#FDE6DB); border-color:#F6CDBB}
+.showcard .big{font-size:clamp(2.8rem,13vw,4rem); line-height:1.15}
+.showcard .phrase{font-family:var(--display); font-weight:700; font-size:clamp(1.3rem,4.6vw,1.75rem); text-align:center; text-wrap:balance; margin:0}
+.tag{background:rgba(255,255,255,.85); border-radius:999px; padding:3px 14px; font-weight:800; font-size:.78rem; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-soft)}
+.sentence{margin:0; text-align:center; font-family:var(--display); font-weight:700; font-size:clamp(1.25rem,4.3vw,1.65rem); line-height:1.45; text-wrap:balance}
+.blank{display:inline-block; min-width:4em; border-bottom:4px dashed var(--mustard); color:#9A6D06; font-weight:800; padding:0 6px}
+.blank.filled{border-bottom-style:solid; border-color:var(--teal); color:var(--teal-deep); animation:pop .4s ease}
+.opts{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px}
+.opts.three{grid-template-columns:repeat(3,1fr)}
+.opts.one{grid-template-columns:1fr}
+.opt{min-height:58px; border-radius:16px; border:2.5px solid var(--line); background:#fff; box-shadow:0 4px 0 var(--line); font-family:var(--display); font-weight:700; font-size:1.12rem; padding:10px 12px; line-height:1.3}
+.opt:hover:not(:disabled){border-color:var(--coral)}
+.opt.yes{background:var(--teal-soft); border-color:var(--teal); color:var(--teal-deep); animation:glow .8s ease}
+.opt.no{background:var(--coral-soft); border-color:var(--coral); color:#9D3A1E; animation:shake .4s ease; opacity:.85}
+.opt:disabled{cursor:default}
+.opt.cat{min-height:96px; display:flex; flex-direction:column; gap:4px; align-items:center; justify-content:center; font-size:1.05rem}
+.opt.cat .ico{font-size:1.7rem}
+.opt.cat[data-a="invite"]{background:#EAF6FC; border-color:#BCDFF2}
+.opt.cat[data-a="accept"]{background:#EAF7EF; border-color:#BEE3CE}
+.opt.cat[data-a="refuse"]{background:#FDEFE6; border-color:#F6D2BA}
+.opt.cat.yes, .opt.cat.no{border-width:3px}
+
+/* reading */
+.story{background:#F7FBFA; border:2px solid var(--line); border-radius:20px; padding:18px; font-size:1.06rem; display:flex; flex-direction:column; gap:10px}
+.story h3{margin:0; font-family:var(--display); font-size:1.2rem}
+.story p{margin:0}
+.story b{color:var(--teal-deep)}
+
+/* typing */
+.typeline{display:flex; flex-wrap:wrap; gap:10px; justify-content:center; align-items:center}
+input[type=text]{border:2.5px solid var(--line); border-radius:14px; padding:12px 14px; font:inherit; font-family:var(--display); font-weight:700; font-size:1.2rem; width:min(260px,100%); background:#fff; color:var(--ink); text-align:center}
+input.ok{border-color:var(--teal); background:var(--teal-soft); color:var(--teal-deep)}
+input.bad{border-color:var(--coral); background:var(--coral-soft)}
+.hintword{font-weight:800; color:var(--plum)}
+
+/* dialogue lines */
+.dlines{display:flex; flex-direction:column; gap:10px}
+.dline{display:flex; gap:10px; align-items:flex-start; border:2.5px solid var(--line); background:#fff; border-radius:16px; padding:10px 14px; font-size:1.02rem; text-align:left; box-shadow:0 3px 0 var(--line); width:100%}
+.dline .who{flex:none; width:30px; height:30px; border-radius:50%; display:grid; place-items:center; font-weight:800; font-size:.9rem; color:#fff; background:var(--plum)}
+.dline.b .who{background:var(--coral)}
+.slot{border:2.5px dashed var(--mustard); background:var(--mustard-soft); border-radius:16px; min-height:60px; padding:10px 14px; display:flex; gap:10px; align-items:center; font-weight:700; color:#7A5908}
+.dlist{display:flex; flex-direction:column; gap:10px; min-height:40px}
+.bubble{display:flex; gap:10px; align-items:flex-start}
+.bubble .who{flex:none; width:34px; height:34px; border-radius:50%; display:grid; place-items:center; font-weight:800; color:#fff; background:var(--plum)}
+.bubble.b{flex-direction:row-reverse}
+.bubble.b .who{background:var(--coral)}
+.bubble p{margin:0; background:var(--plum-soft); border-radius:16px 16px 16px 4px; padding:10px 14px; font-size:1.04rem; max-width:80%}
+.bubble.b p{background:var(--coral-soft); border-radius:16px 16px 4px 16px}
+.chips{display:flex; flex-wrap:wrap; gap:8px}
+.chipbtn{border:2px solid var(--line); background:#fff; border-radius:999px; padding:8px 14px; font-weight:700; font-size:.98rem; min-height:44px; text-align:left; box-shadow:0 2px 0 var(--line)}
+.chipbtn:hover{border-color:var(--plum)}
+textarea{width:100%; min-height:72px; resize:vertical; border:2.5px solid var(--line); border-radius:14px; padding:12px 14px; font:inherit; font-size:1.1rem; background:#fff; color:var(--ink)}
+.stepbox{border:2px solid var(--line); border-radius:20px; padding:16px; display:flex; flex-direction:column; gap:12px; background:#F7FBFA}
+.stepbox h3{margin:0; font-family:var(--display); font-size:1.25rem}
+.who-label{font-weight:800; color:var(--ink-soft); font-size:.9rem; text-transform:uppercase; letter-spacing:.08em}
+
+/* intro / final */
+.center{text-align:center; display:flex; flex-direction:column; gap:14px; align-items:center}
+.big-emoji{font-size:clamp(3rem,12vw,4.4rem); line-height:1.1}
+.center h2{margin:0; font-family:var(--display); font-weight:700; font-size:clamp(1.55rem,5.2vw,2.25rem); line-height:1.1; text-wrap:balance}
+.center p{margin:0; max-width:36em; font-size:1.05rem}
+.levels-list{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:10px; width:100%}
+.levels-list div{background:#F4FAF8; border:2px solid var(--line); border-radius:15px; padding:10px; font-weight:700; text-align:left}
+.levels-list div span{display:block; font-size:1.35rem}
+.magic{background:var(--plum-soft); border-radius:15px; padding:10px 16px; font-weight:700; color:#4A3570}
+.scorebig{font-family:var(--display); font-weight:700; font-size:clamp(3rem,12vw,4.4rem); color:var(--coral-deep); line-height:1; font-variant-numeric:tabular-nums}
+.review{display:flex; flex-direction:column; gap:12px; width:100%; text-align:left}
+.review h3{margin:0; font-family:var(--display); font-size:1.3rem}
+.wgrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(215px,1fr)); gap:8px}
+.wgrid div{background:#F7FBFA; border:2px solid var(--line); border-radius:13px; padding:8px 12px; font-weight:700; display:flex; gap:8px; align-items:baseline}
+.wgrid div i{font-style:normal; font-weight:600; color:var(--ink-soft); font-size:.9rem}
+
+/* phrase table */
+.ptable{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; text-align:left}
+.pcol{border:2px solid var(--line); border-radius:16px; overflow:hidden; display:flex; flex-direction:column}
+.pcol h3{margin:0; padding:10px; font-family:var(--display); font-size:1.1rem; text-align:center}
+.pcol:nth-child(1) h3{background:#DCEFF9}
+.pcol:nth-child(2) h3{background:#DDF1E5}
+.pcol:nth-child(3) h3{background:#FBE4D5}
+.pcol ol{margin:0; padding:10px 10px 12px 28px; display:flex; flex-direction:column; gap:7px; font-size:.95rem}
+
+/* modals + toast */
+.overlay{position:fixed; inset:0; background:rgba(16,45,42,.55); display:grid; place-items:center; padding:16px; z-index:20; overflow:auto}
+.modal{background:var(--paper); border-radius:24px; padding:24px 20px; width:min(700px,100%); display:flex; flex-direction:column; gap:14px; box-shadow:0 20px 50px -10px rgba(0,0,0,.4)}
+.modal h2{margin:0; font-family:var(--display); font-weight:700; font-size:1.5rem; text-align:center}
+.modal .row{display:flex; gap:10px; justify-content:center; flex-wrap:wrap}
+.toast{position:fixed; left:50%; bottom:calc(20px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%) translateY(20px); background:var(--teal); color:#fff; font-family:var(--display); font-weight:700; font-size:1.18rem; padding:10px 22px; border-radius:999px; opacity:0; transition:opacity .25s, transform .25s; pointer-events:none; z-index:30; white-space:nowrap; box-shadow:0 8px 20px -6px rgba(0,0,0,.35)}
+.toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+.toast.soft{background:var(--mustard); color:#3D2A05}
+
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.28)}100%{transform:scale(1)}}
+@keyframes glow{0%{box-shadow:0 0 0 0 rgba(46,154,143,.5)}100%{box-shadow:0 0 0 14px rgba(46,154,143,0)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+@media (prefers-reduced-motion: reduce){*{animation:none!important; transition:none!important}}
+
+@media (max-width:620px){
+  body{font-size:16px}
+  .hud{padding:16px 16px 66px; border-radius:20px}
+  .stage{padding:16px; border-radius:20px}
+  .lv-badge{width:48px; height:48px; font-size:1.45rem}
+  .opts{grid-template-columns:1fr}
+  .opts.three{grid-template-columns:1fr}
+  .match{gap:8px}
+  .mcard{font-size:.95rem; min-height:58px}
+  .mcard.pic{font-size:1.7rem}
+  .ptable{grid-template-columns:1fr}
+  .btn.phrases{width:100%}
+  .bubble p{max-width:100%}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="hud">
+    <div class="hud-top">
+      <div class="brand">
+        <h1>LET’S GO OUT!</h1>
+        <p>Free time, Past Simple &amp; invitations 💬</p>
+      </div>
+      <button class="btn phrases" id="phrBtn" type="button">📋 PHRASE TABLE</button>
+    </div>
+    <div class="hud-row">
+      <div class="stats">
+        <span class="pill"><small>Task</small> <span id="lvText">–</span></span>
+        <span class="pill score"><small>Score</small> <b id="scoreText">0</b></span>
+        <span class="pill"><span class="hearts" id="hearts" aria-label="3 hearts left"><span>❤️</span><span>❤️</span><span>❤️</span></span></span>
+      </div>
+      <nav class="map" id="map" aria-label="Tasks"></nav>
+    </div>
+    <div class="progress" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="bar"></div></div>
+    <p class="cheer" id="cheer">Hi! Let’s talk about free time and make some plans.</p>
+    <svg class="city" viewBox="0 0 800 74" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <g fill="#1C6159"><rect x="40" y="30" width="46" height="44" rx="4"/><rect x="96" y="44" width="34" height="30" rx="4"/><rect x="620" y="36" width="42" height="38" rx="4"/><rect x="672" y="26" width="30" height="48" rx="4"/></g>
+      <g fill="#2B7D73"><polygon points="150,74 182,38 214,74"/><polygon points="500,74 528,44 556,74"/><rect x="250" y="48" width="30" height="26" rx="3"/></g>
+      <g fill="#3E9A8C"><circle cx="330" cy="46" r="20"/><rect x="326" y="46" width="8" height="28"/></g>
+      <path d="M0 66 C120 58 220 70 340 64 S560 56 800 64 L800 74 L0 74Z" fill="#2B7D73"/>
+      <g transform="translate(420 18)"><rect x="0" y="0" width="84" height="34" rx="12" fill="#FFF3EC"/><polygon points="14,34 16,44 28,34" fill="#FFF3EC"/><circle cx="24" cy="17" r="3.4" fill="#EE6E4C"/><circle cx="42" cy="17" r="3.4" fill="#EE6E4C"/><circle cx="60" cy="17" r="3.4" fill="#EE6E4C"/></g>
+    </svg>
+  </header>
+  <main class="stage" id="stage"></main>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<div class="overlay" id="phrModal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="phrTitle">
+    <h2 id="phrTitle">📋 Invite · Accept · Refuse</h2>
+    <div class="ptable">
+      <div class="pcol"><h3>Invite</h3><ol>
+        <li>Let’s go to the park!</li><li>How about going hiking?</li><li>Why don’t we fly a kite?</li>
+        <li>Do you want to go shopping?</li><li>Shall we watch the stars tonight?</li></ol></div>
+      <div class="pcol"><h3>Accept</h3><ol>
+        <li>Sounds good!</li><li>Why not?</li><li>Good idea!</li><li>Yes, let’s! I’d love to.</li></ol></div>
+      <div class="pcol"><h3>Refuse</h3><ol>
+        <li>I don’t think it’s a good idea.</li><li>Sorry, I can’t. I’m busy.</li>
+        <li>I’d rather stay inside.</li><li>Sorry, maybe next time.</li></ol></div>
+    </div>
+    <div class="row"><button class="btn primary" id="phrClose" type="button">Close</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="refillModal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="refillTitle" style="max-width:420px;text-align:center">
+    <div class="big-emoji">💚❤️💚</div>
+    <h2 id="refillTitle">No more hearts!</h2>
+    <p style="margin:0">Mistakes help us learn. Here are 3 new hearts — keep going!</p>
+    <div class="row"><button class="btn primary" id="refillBtn" type="button">Keep going!</button></div>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+var $ = function(s){ return document.querySelector(s); };
+function shuffle(a){ a = a.slice(); for (var i = a.length - 1; i > 0; i--){ var j = Math.floor(Math.random() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+function cap(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+function esc(s){ return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
+
+/* ================= DATA ================= */
+var LEVELS = [
+  {title:'Match the Pictures', icon:'🖼️'},
+  {title:'Go, Do, Play or Spend?', icon:'🗂️'},
+  {title:'Read and Answer', icon:'📖'},
+  {title:'Find the Correct Sentence', icon:'✅'},
+  {title:'Finish the Phrase', icon:'💬'},
+  {title:'What do you say?', icon:'🙂'},
+  {title:'Put the Dialogue in Order', icon:'🔢'},
+  {title:'Make Your Own Dialogue', icon:'✍️'}
+];
+
+var PAIRS = [
+  {w:'theme park', pic:'🎢', ru:'парк аттракционов'},
+  {w:'fly a kite', pic:'🪁', ru:'запускать воздушного змея'},
+  {w:'watch the stars', pic:'🔭', ru:'смотреть на звёзды'},
+  {w:'go hiking', pic:'🥾', ru:'ходить в поход'},
+  {w:'go shopping', pic:'🛍️', ru:'ходить по магазинам'},
+  {w:'do housework', pic:'🧹', ru:'делать работу по дому'},
+  {w:'do yoga', pic:'🧘', ru:'заниматься йогой'},
+  {w:'play sports', pic:'⚽', ru:'заниматься спортом'},
+  {w:'go on an excursion', pic:'🚌', ru:'поехать на экскурсию'},
+  {w:'go rock climbing', pic:'🧗', ru:'лазать по скалам'},
+  {w:'watch TV', pic:'📺', ru:'смотреть телевизор'},
+  {w:'go out with friends', pic:'👫', ru:'гулять с друзьями'},
+  {w:'spend time with family', pic:'👨‍👩‍👧', ru:'проводить время с семьёй'},
+  {w:'inside', pic:'🏠', ru:'внутри, дома'},
+  {w:'outside', pic:'🌳', ru:'на улице'},
+  {w:'night sky', pic:'🌌', ru:'ночное небо'}
+];
+
+var SORTS = [
+  {w:'shopping', a:['go'], pic:'🛍️'},
+  {w:'hiking', a:['go'], pic:'🥾'},
+  {w:'rock climbing', a:['go'], pic:'🧗'},
+  {w:'on an excursion', a:['go'], pic:'🚌'},
+  {w:'out with friends', a:['go'], pic:'👫'},
+  {w:'to a theme park', a:['go'], pic:'🎢'},
+  {w:'housework', a:['do'], pic:'🧹'},
+  {w:'yoga', a:['do'], pic:'🧘'},
+  {w:'sports', a:['do','play'], pic:'⚽'},
+  {w:'football', a:['play'], pic:'🥅'},
+  {w:'basketball', a:['play'], pic:'🏀'},
+  {w:'computer games', a:['play'], pic:'🎮'},
+  {w:'time with my family', a:['spend'], pic:'👨‍👩‍👧'},
+  {w:'two hours outside', a:['spend'], pic:'⏳'},
+  {w:'the evening inside', a:['spend'], pic:'🏠'}
+];
+
+var STORIES = [
+  {
+    who:'Emma', emoji:'🪁',
+    text:'Last weekend was great! On Saturday morning I did housework with my mum. Then we went shopping and I bought a new kite. In the afternoon my dad and I went outside and flew the kite in the park. I really enjoyed it! On Sunday my class went on an excursion to an old castle. I disliked the long bus trip, but the castle was amazing. At night we watched the stars in the sky.',
+    qs:[
+      {s:'Emma did housework on Saturday morning.', a:true},
+      {s:'Emma and her mum went to a theme park.', a:false, why:'They went shopping.'},
+      {s:'Emma flew her new kite inside.', a:false, why:'She flew it outside, in the park.'},
+      {s:'Emma enjoyed flying the kite.', a:true},
+      {s:'Her class went on an excursion to a castle.', a:true},
+      {s:'Emma loved the long bus trip.', a:false, why:'She disliked it.'},
+      {s:'They watched TV at night.', a:false, why:'They watched the stars.'},
+      {s:'Emma went shopping with her mum.', a:true}
+    ]
+  },
+  {
+    who:'Tom', emoji:'🎢',
+    text:'On Saturday I didn’t go out with my friends. It rained all day, so I stayed inside. I watched TV and played computer games with my brother. My sister did yoga in her room. On Sunday the weather was nice and we went to a theme park with my cousins. We spent five hours there! In the evening we were very tired, so we ate pizza at home and went to bed early.',
+    qs:[
+      {s:'Tom went out with his friends on Saturday.', a:false, why:'He stayed inside because it rained.'},
+      {s:'Tom watched TV on Saturday.', a:true},
+      {s:'Tom’s sister did yoga.', a:true},
+      {s:'They went to a theme park on Sunday.', a:true},
+      {s:'They spent five hours at the theme park.', a:true},
+      {s:'They went rock climbing in the evening.', a:false, why:'They ate pizza at home.'},
+      {s:'Tom played computer games with his sister.', a:false, why:'He played with his brother.'},
+      {s:'The weather was nice on Sunday.', a:true}
+    ]
+  }
+];
+
+var CORRECT = [
+  {pic:'🎢', ok:'Last Sunday we went to a theme park.', bad:[
+    ['Last Sunday we goed to a theme park.','“goed” is not a word — go → went.'],
+    ['Last Sunday we go to a theme park.','“Last Sunday” is the past, so we need went.']]},
+  {pic:'🧹', ok:'On Saturday I did housework with my dad.', bad:[
+    ['On Saturday I made housework with my dad.','We say do housework, not make housework.'],
+    ['On Saturday I done housework with my dad.','do → did in the Past Simple.']]},
+  {pic:'🥾', ok:'We went hiking in the mountains.', bad:[
+    ['We did hiking in the mountains.','We say go hiking → went hiking.'],
+    ['We went hike in the mountains.','After go we use the -ing form: go hiking.']]},
+  {pic:'🪁', ok:'My brother flew a kite in the park.', bad:[
+    ['My brother flied a kite in the park.','fly → flew, not “flied”.'],
+    ['My brother fly a kite in the park yesterday.','“Yesterday” needs the past form: flew.']]},
+  {pic:'🔭', ok:'We watched the stars last night.', bad:[
+    ['We looked the stars last night.','We watch the stars (or look AT them).'],
+    ['We watch the stars last night.','“Last night” is the past: watched.']]},
+  {pic:'👨‍👩‍👧', ok:'We spent two hours with our family.', bad:[
+    ['We spended two hours with our family.','spend → spent.'],
+    ['We spend two hours with our family last Sunday.','“Last Sunday” needs spent.']]},
+  {pic:'🏀', ok:'I played basketball after school.', bad:[
+    ['I did basketball after school.','We play basketball, not “do basketball”.'],
+    ['I play basketball after school yesterday.','“Yesterday” needs played.']]},
+  {pic:'🚌', ok:'I really enjoyed the excursion.', bad:[
+    ['I really enjoyed to the excursion.','enjoy + thing: enjoyed the excursion.'],
+    ['I really enjoy the excursion last week.','“Last week” needs enjoyed.']]},
+  {pic:'😖', ok:'She hated doing housework.', bad:[
+    ['She hated do housework.','After hate we use -ing: hated doing.'],
+    ['She hate doing housework last year.','“Last year” needs hated.']]},
+  {pic:'🏠', ok:'It rained, so we stayed inside.', bad:[
+    ['It rained, so we stayed outside.','When it rains, we stay INSIDE.'],
+    ['It rained, so we stay inside.','The story is in the past: stayed.']]},
+  {pic:'👫', ok:'We went out with our friends on Friday.', bad:[
+    ['We went out our friends on Friday.','go out WITH friends — we need “with”.'],
+    ['We go out with our friends on Friday evening last week.','“Last week” needs went.']]},
+  {pic:'🧘', ok:'My mum did yoga in the garden.', bad:[
+    ['My mum made yoga in the garden.','We say do yoga, not make yoga.'],
+    ['My mum do yoga in the garden yesterday.','“Yesterday” needs did.']]},
+  {pic:'🛍️', ok:'We went shopping and bought new shoes.', bad:[
+    ['We went shopping and buyed new shoes.','buy → bought.'],
+    ['We go shopping and bought new shoes.','Both verbs are past: went and bought.']]},
+  {pic:'🧗', ok:'Last month we went rock climbing.', bad:[
+    ['Last month we went rock climb.','After go we use the -ing form: go rock climbing.'],
+    ['Last month we go rock climbing.','“Last month” needs went.']]}
+];
+
+var PHRASEGAPS = [
+  {p:'___ go to the theme park!', a:'Let’s', o:['Let','Lets'], full:'Let’s go to the theme park!', k:'invite'},
+  {p:'How ___ going hiking on Sunday?', a:'about', o:['about to','for'], full:'How about going hiking on Sunday?', k:'invite'},
+  {p:'Why ___ we fly a kite?', a:'don’t', o:['not','aren’t'], full:'Why don’t we fly a kite?', k:'invite'},
+  {p:'Do you ___ to go shopping with me?', a:'want', o:['wanted','wanting'], full:'Do you want to go shopping with me?', k:'invite'},
+  {p:'___ we watch the stars tonight?', a:'Shall', o:['Will to','Do'], full:'Shall we watch the stars tonight?', k:'invite'},
+  {p:'Would you ___ to go on an excursion?', a:'like', o:['liked','liking'], full:'Would you like to go on an excursion?', k:'invite'},
+  {p:'Sounds ___!', a:'good', o:['goodly','well'], full:'Sounds good!', k:'accept'},
+  {p:'Why ___?', a:'not', o:['no','don’t'], full:'Why not?', k:'accept'},
+  {p:'Good ___! Let’s do it.', a:'idea', o:['ideas','advice'], full:'Good idea! Let’s do it.', k:'accept'},
+  {p:'Yes, let’s! I’d ___ to.', a:'love', o:['loved','loving'], full:'Yes, let’s! I’d love to.', k:'accept'},
+  {p:'That ___ great!', a:'sounds', o:['sound','sounded'], full:'That sounds great!', k:'accept'},
+  {p:'I don’t think it’s a good ___.', a:'idea', o:['think','thing'], full:'I don’t think it’s a good idea.', k:'refuse'},
+  {p:'Sorry, I ___. I’m busy today.', a:'can’t', o:['don’t can','not can'], full:'Sorry, I can’t. I’m busy today.', k:'refuse'},
+  {p:'I’d ___ stay inside.', a:'rather', o:['better','prefer'], full:'I’d rather stay inside.', k:'refuse'},
+  {p:'Sorry, ___ next time.', a:'maybe', o:['may be to','perhaps be'], full:'Sorry, maybe next time.', k:'refuse'},
+  {p:'No, thanks. I don’t ___ like shopping.', a:'really', o:['real','very'], full:'No, thanks. I don’t really like shopping.', k:'refuse'}
+];
+
+var REPLY = [
+  {face:'😃', s:'Let’s go to the theme park on Saturday!', a:'Sounds good! I’d love to.', o:['I don’t think it’s a good idea.','How about going hiking?'], pic:'🎢'},
+  {face:'🙁', s:'Why don’t we go shopping after school?', a:'Sorry, I can’t. I have to do housework.', o:['Good idea! Let’s go.','Do you want to fly a kite?'], pic:'🛍️'},
+  {face:'😃', s:'Shall we watch the stars tonight?', a:'Why not? The sky is beautiful tonight.', o:['Sorry, maybe next time.','Did you go hiking?'], pic:'🔭'},
+  {face:'🙁', s:'How about going rock climbing on Sunday?', a:'I don’t think it’s a good idea. It’s dangerous for me.', o:['Great idea! I love climbing.','Let’s go to the cinema!'], pic:'🧗'},
+  {face:'😃', s:'Do you want to go hiking with us?', a:'Yes, let’s! What time?', o:['I’d rather stay inside.','I went hiking last week.'], pic:'🥾'},
+  {face:'🙁', s:'Let’s go out with friends tonight!', a:'Sorry, I’m busy tonight. Maybe tomorrow?', o:['Sounds good! See you at seven.','Why don’t we do yoga?'], pic:'👫'},
+  {face:'😃', s:'Would you like to go on an excursion to the castle?', a:'That sounds great! I love old castles.', o:['No, thanks. I hate castles.','What did you do yesterday?'], pic:'🚌'},
+  {face:'🙁', s:'Why don’t we do yoga in the park?', a:'I’d rather stay inside. It’s very cold today.', o:['Good idea! Let’s go now.','We played sports yesterday.'], pic:'🧘'}
+];
+
+var DIALOGUES = [
+  {title:'Hiking plans 🥾', lines:[
+    'Hi, Tom! What did you do last weekend?',
+    'I went hiking with my dad. We were outside all day!',
+    'Nice! Let’s go hiking together next Saturday!',
+    'Sounds good! Where shall we go?',
+    'To the forest near the river.',
+    'Great! See you on Saturday!'
+  ]},
+  {title:'A rainy weekend 🌧️', lines:[
+    'Hi, Kate! Did you go out with friends on Sunday?',
+    'No, I didn’t. I stayed inside and did housework.',
+    'Oh no! How about going to a theme park this weekend?',
+    'I don’t think it’s a good idea. I don’t really like big crowds.',
+    'OK. Then let’s fly a kite in the park!',
+    'Why not? That sounds fun!'
+  ]},
+  {title:'Stars tonight 🔭', lines:[
+    'Hi, Max! Did you enjoy the excursion on Friday?',
+    'Yes, I did! We visited an old castle and took lots of photos.',
+    'Lucky you! Shall we watch the stars tonight?',
+    'Sorry, I can’t. I’m busy tonight.',
+    'No problem. How about tomorrow?',
+    'Perfect! See you then.'
+  ]}
+];
+
+var STEPS = [
+  {who:'A', label:'You', task:'Say hello and ask about last weekend.', chips:['Hi! What did you do last weekend?','Hello! Did you go out last weekend?','Hi! Where did you go at the weekend?']},
+  {who:'B', label:'Your friend', task:'Answer in the Past Simple.', chips:['I went to a theme park with my family.','I did housework and watched TV.','I went hiking and flew a kite.','I stayed inside and played computer games.']},
+  {who:'A', label:'You', task:'Invite your friend somewhere.', chips:['Let’s go shopping on Saturday!','How about going hiking?','Why don’t we fly a kite in the park?','Shall we watch the stars tonight?','Do you want to go to a theme park?']},
+  {who:'B', label:'Your friend', task:'Accept or refuse — and give a reason!', chips:['Sounds good! I’d love to.','Why not? That sounds fun!','Good idea! Let’s do it.','I don’t think it’s a good idea. I’m tired.','Sorry, I can’t. I have to do housework.','I’d rather stay inside. It’s cold.']},
+  {who:'A', label:'You', task:'Ask about the time or place — or give another idea.', chips:['Great! What time?','Where shall we meet?','No problem. How about Sunday?','OK. Then let’s watch a film inside.']},
+  {who:'B', label:'Your friend', task:'Finish the dialogue.', chips:['At five o’clock. See you!','Let’s meet near the park.','Perfect! See you tomorrow.','Sounds good. Bye!']}
+];
+
+var PAST = {};
+['went','did','played','spent','watched','flew','enjoyed','hated','disliked','minded','stayed','visited','walked','climbed','ate','had','was','were','saw','took','made','bought','read','slept','ran','helped','cooked','travelled','traveled','met','drank','got','gave','found','wrote','sat','told','left','felt','came','liked','loved','wanted','started','finished','listened','talked','tried','cleaned','rested','relaxed','rained'].forEach(function(w){ PAST[w] = 1; });
+var NOT_ED = {need:1, feed:1, seed:1, speed:1, bed:1, red:1, shed:1, weed:1, bleed:1, hundred:1, indeed:1};
+function pastWords(text){
+  var words = text.toLowerCase().replace(/[’‘]/g, "'").match(/[a-z']+/g) || [], out = [];
+  words.forEach(function(w){
+    if ((PAST[w] === 1 || w === "didn't" || (/^[a-z]{2,}ed$/.test(w) && !NOT_ED[w])) && out.indexOf(w) < 0) out.push(w);
+  });
+  return out;
+}
+var CHEERS = ['You’re doing great! 🌟','Every mistake helps you learn. 🌱','Keep going! 💬','Remember: last weekend = Past Simple. ⏪','Wow, that was fast! ⚡','Nice and calm — you’ve got this. 🍀'];
+var PRAISE = ['Great!','You got it!','Super!','Yes!','Brilliant!','Well done!','Awesome!'];
+
+/* ================= ENGINE ================= */
+var N = LEVELS.length;
+var S = {lv:-1, hearts:3, pts:[], done:[], frac:0, token:0, screen:'intro'};
+for (var z = 0; z < N; z++){ S.pts.push(0); S.done.push(false); }
+var stage = $('#stage');
+function total(){ return S.pts.reduce(function(a, b){ return a + b; }, 0); }
+var MAX = 6*15 + 10*15 + 5*15 + 8*15 + 9*15 + 8*15 + 3*15 + (6*10 + 20);
+
+function updateHUD(){
+  $('#lvText').textContent = S.screen === 'final' ? 'Done!' : (S.lv < 0 ? 'Ready?' : (S.lv + 1) + ' / ' + N);
+  $('#scoreText').textContent = total();
+  var hs = $('#hearts').children;
+  for (var i = 0; i < 3; i++) hs[i].classList.toggle('lost', i >= S.hearts);
+  $('#hearts').setAttribute('aria-label', S.hearts + ' hearts left');
+  var p = S.screen === 'final' ? 1 : (S.lv < 0 ? 0 : (S.lv + S.frac) / N);
+  $('#bar').style.width = Math.round(p * 100) + '%';
+  $('.progress').setAttribute('aria-valuenow', Math.round(p * 100));
+  $('#map').innerHTML = LEVELS.map(function(l, i){
+    return '<button type="button" class="chip' + (i === S.lv && S.screen !== 'final' ? ' cur' : '') + (S.done[i] ? ' done' : '') +
+      '" data-lv="' + i + '" aria-label="Task ' + (i + 1) + ': ' + l.title + '">' + l.icon + ' ' + (i + 1) + '</button>';
+  }).join('');
+}
+$('#map').addEventListener('click', function(e){ var b = e.target.closest('.chip'); if (b) startLevel(+b.dataset.lv); });
+
+function addPts(n){
+  if (S.lv < 0) return;
+  S.pts[S.lv] += n; updateHUD();
+  var s = $('#scoreText'); s.classList.remove('pop'); void s.offsetWidth; s.classList.add('pop');
+}
+var toastTimer;
+function toast(msg, soft){
+  var t = $('#toast'); t.textContent = msg; t.classList.toggle('soft', !!soft); t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 1300);
+}
+function cheer(msg){ $('#cheer').textContent = msg || CHEERS[Math.floor(Math.random() * CHEERS.length)]; }
+function praise(){ return PRAISE[Math.floor(Math.random() * PRAISE.length)]; }
+function later(fn, ms){ var tok = S.token; setTimeout(function(){ if (tok === S.token) fn(); }, ms); }
+function loseHeart(){
+  S.hearts = Math.max(0, S.hearts - 1); updateHUD();
+  cheer('That’s okay! Mistakes help us learn. 🌱');
+  if (S.hearts === 0) later(function(){ $('#refillModal').hidden = false; }, 600);
+}
+$('#refillBtn').addEventListener('click', function(){ S.hearts = 3; updateHUD(); $('#refillModal').hidden = true; cheer('Three new hearts! Let’s go. ❤️'); });
+
+function head(i, instr, count, tip){
+  return '<div class="lv-head"><div class="lv-badge" aria-hidden="true">' + LEVELS[i].icon + '</div><div><div class="eyebrow">Task ' + (i + 1) +
+    '</div><h2>' + LEVELS[i].title + '</h2></div>' + (count ? '<div class="count">' + count + '</div>' : '') + '</div>' +
+    '<p class="instr">' + instr + '</p>' + (tip ? '<p class="tip">' + tip + '</p>' : '');
+}
+function nextRow(label){
+  return '<div class="next-row" id="nextRow" hidden><button type="button" class="btn primary" id="nextBtn">' + label + '</button></div>';
+}
+function reward(tries, t0, limit){
+  var quick = tries === 0 && Date.now() - t0 < (limit || 8000);
+  var n = (tries === 0 ? 10 : 5) + (quick ? 5 : 0);
+  addPts(n); toast(praise() + ' +' + n + (quick ? ' ⚡' : ''));
+}
+function startLevel(i){
+  S.token++; S.lv = i; S.hearts = 3; S.pts[i] = 0; S.frac = 0; S.screen = 'level';
+  $('#refillModal').hidden = true;
+  updateHUD(); cheer();
+  [task1, task2, task3, task4, task5, task6, task7, task8][i]();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+function levelComplete(){
+  S.done[S.lv] = true; S.frac = 1; updateHUD();
+  if (S.lv === N - 1){ finalScreen(); return; }
+  var i = S.lv;
+  var msgs = ['Great matching!','You know the verbs: go, do, play, spend!','You understood the whole story!','You can find the mistakes!','You know all the phrases!','You always know what to say!','Your dialogue is perfect!'];
+  stage.innerHTML = '<div class="center"><div class="big-emoji">🌟🎉🌟</div><h2>Task ' + (i + 1) + ' complete!</h2>' +
+    '<p>' + msgs[i] + ' You got <b>' + S.pts[i] + ' points</b> in this task.</p>' +
+    '<p class="magic">Next: ' + LEVELS[i + 1].icon + ' <b>' + LEVELS[i + 1].title + '</b></p>' +
+    '<button class="btn primary" id="goNext" type="button">Next task →</button></div>';
+  cheer('Fantastic work! Let’s continue. 🍀');
+  $('#goNext').addEventListener('click', function(){ startLevel(i + 1); });
+  $('#goNext').focus();
+}
+
+/* ================= INTRO ================= */
+function intro(){
+  S.token++; S.lv = -1; S.screen = 'intro'; S.frac = 0; S.hearts = 3; updateHUD();
+  stage.innerHTML = '<div class="center"><div class="big-emoji">💬🪁🎢</div><h2>What did you do? And what shall we do next?</h2>' +
+    '<p>Eight tasks about free time. First we talk about <b>last weekend</b> in the Past Simple — went, did, played, spent, flew, watched. Then we learn how to <b>invite</b> a friend, <b>accept</b> and <b>refuse</b> — and you make your own dialogue at the end.</p>' +
+    '<div class="levels-list">' + LEVELS.map(function(l, i){ return '<div><span>' + l.icon + '</span>' + (i + 1) + '. ' + l.title + '</div>'; }).join('') + '</div>' +
+    '<p class="magic">📋 The <b>Phrase table</b> button at the top always shows you the invitation phrases.</p>' +
+    '<button class="btn primary" id="startBtn" type="button">Start →</button></div>';
+  $('#startBtn').addEventListener('click', function(){ startLevel(0); });
+}
+
+/* ========== 1. QUICK MATCH ========== */
+function task1(){
+  var pairs = shuffle(PAIRS).slice(0, 6);
+  var left = shuffle(pairs), right = shuffle(pairs);
+  var selL = null, selR = null, found = 0, busy = false, t0 = Date.now();
+  stage.innerHTML = head(0, 'Tap a picture, then tap the English words for it.', '<span id="mc">0</span> / 6') +
+    '<div class="match"><div class="col"><div class="col-label">Picture</div>' +
+      left.map(function(p){ return '<button type="button" class="mcard pic" data-side="L" data-w="' + esc(p.w) + '" aria-label="' + esc(p.ru) + '">' + p.pic + '</button>'; }).join('') +
+    '</div><div class="col"><div class="col-label">English</div>' +
+      right.map(function(p){ return '<button type="button" class="mcard" data-side="R" data-w="' + esc(p.w) + '">' + p.w + '</button>'; }).join('') +
+    '</div></div><p class="feedback" id="fb"></p>';
+  var fb = $('#fb');
+  function clear(){
+    if (selL) selL.classList.remove('sel');
+    if (selR) selR.classList.remove('sel');
+    selL = selR = null;
+  }
+  stage.querySelector('.match').addEventListener('click', function(e){
+    var b = e.target.closest('.mcard');
+    if (!b || busy || b.classList.contains('found')) return;
+    if (b.dataset.side === 'L'){
+      if (selL) selL.classList.remove('sel');
+      selL = (selL === b) ? null : b;
+      if (selL) selL.classList.add('sel');
+    } else {
+      if (selR) selR.classList.remove('sel');
+      selR = (selR === b) ? null : b;
+      if (selR) selR.classList.add('sel');
+    }
+    if (!(selL && selR)) return;
+    var pair = pairs.filter(function(p){ return p.w === selL.dataset.w; })[0];
+    if (selL.dataset.w === selR.dataset.w){
+      selL.classList.remove('sel'); selR.classList.remove('sel');
+      selL.classList.add('found'); selR.classList.add('found');
+      var quick = Date.now() - t0 < 8000;
+      addPts(10 + (quick ? 5 : 0)); toast(praise() + ' +' + (quick ? 15 : 10) + (quick ? ' \u26a1' : ''));
+      fb.className = 'feedback good'; fb.textContent = pair.pic + ' ' + pair.w + ' = ' + pair.ru;
+      found++; S.frac = found / 6; updateHUD(); $('#mc').textContent = found;
+      selL = selR = null; t0 = Date.now();
+      if (found === 6) later(levelComplete, 900);
+    } else {
+      busy = true;
+      var wrong = pairs.filter(function(p){ return p.w === selR.dataset.w; })[0];
+      selL.classList.add('wrong'); selR.classList.add('wrong');
+      fb.className = 'feedback hint'; fb.textContent = '\u201c' + wrong.w + '\u201d \u2014 \u044d\u0442\u043e ' + wrong.ru + '. Try again! \ud83c\udf40';
+      loseHeart();
+      var a = selL, c = selR;
+      later(function(){ a.classList.remove('wrong', 'sel'); c.classList.remove('wrong', 'sel'); selL = selR = null; busy = false; }, 750);
+    }
+  });
+}
+
+/* ========== 2. GO / DO / PLAY / SPEND ========== */
+function task2(){
+  var qs = shuffle(SORTS).slice(0, 10), i = 0;
+  var cats = [['go','🚶'], ['do','🧹'], ['play','⚽'], ['spend','⏳']];
+  function show(){
+    var q = qs[i], tries = 0, t0 = Date.now();
+    stage.innerHTML = head(1, 'Which verb goes with this phrase? Tap <b>go</b>, <b>do</b>, <b>play</b> or <b>spend</b>.', (i + 1) + ' / ' + qs.length,
+        'Tip: we say <b>do sports</b> AND <b>play sports</b> — both are correct!') +
+      '<div class="showcard"><div class="big" aria-hidden="true">' + q.pic + '</div><p class="phrase">… ' + q.w + '</p></div>' +
+      '<div class="opts">' + cats.map(function(c){
+        return '<button type="button" class="opt cat" data-a="' + c[0] + '"><span class="ico" aria-hidden="true">' + c[1] + '</span>' + c[0] + '</button>';
+      }).join('') + '</div><p class="feedback" id="fb"></p>' + nextRow(i + 1 < qs.length ? 'Next →' : 'Finish task →');
+    var fb = $('#fb');
+    stage.querySelector('.opts').addEventListener('click', function(e){
+      var b = e.target.closest('.opt'); if (!b || b.disabled) return;
+      if (q.a.indexOf(b.dataset.a) > -1){
+        Array.prototype.forEach.call(stage.querySelectorAll('.opt'), function(x){ x.disabled = true; });
+        b.classList.add('yes');
+        reward(tries, t0, 6000);
+        var all = q.a.map(function(v){ return v + ' ' + q.w; }).join('  /  ');
+        fb.className = 'feedback good'; fb.textContent = 'Yes! ' + all + ' → last weekend: I ' + (q.a[0] === 'go' ? 'went' : q.a[0] === 'do' ? 'did' : q.a[0] === 'play' ? 'played' : 'spent') + ' ' + q.w + '.';
+        i++; S.frac = i / qs.length; updateHUD();
+        $('#nextRow').hidden = false; $('#nextBtn').focus();
+      } else {
+        tries++; b.disabled = true; b.classList.add('no');
+        fb.className = 'feedback hint'; fb.textContent = 'We don’t say “' + b.dataset.a + ' ' + q.w + '”. Try another verb! 🍀';
+        loseHeart();
+      }
+    });
+    $('#nextBtn').addEventListener('click', function(){ if (i < qs.length) show(); else levelComplete(); });
+  }
+  show();
+}
+
+/* ========== 3. READ AND ANSWER ========== */
+function task3(){
+  var st = STORIES[Math.floor(Math.random() * STORIES.length)];
+  var qs = shuffle(st.qs).slice(0, 5), i = 0;
+  function show(){
+    var q = qs[i], tries = 0, t0 = Date.now();
+    stage.innerHTML = head(2, 'Read ' + st.who + '’s story. Is the sentence <b>true</b> or <b>false</b>?', (i + 1) + ' / ' + qs.length) +
+      '<div class="story"><h3>' + st.emoji + ' ' + st.who + '’s weekend</h3><p>' + st.text + '</p></div>' +
+      '<p class="sentence">' + q.s + '</p>' +
+      '<div class="opts"><button type="button" class="opt cat" data-a="true"><span class="ico" aria-hidden="true">✅</span>TRUE</button>' +
+      '<button type="button" class="opt cat" data-a="false"><span class="ico" aria-hidden="true">❌</span>FALSE</button></div>' +
+      '<p class="feedback" id="fb"></p>' + nextRow(i + 1 < qs.length ? 'Next →' : 'Finish task →');
+    var fb = $('#fb');
+    stage.querySelector('.opts').addEventListener('click', function(e){
+      var b = e.target.closest('.opt'); if (!b || b.disabled) return;
+      if ((b.dataset.a === 'true') === q.a){
+        Array.prototype.forEach.call(stage.querySelectorAll('.opt'), function(x){ x.disabled = true; });
+        b.classList.add('yes');
+        reward(tries, t0, 12000);
+        fb.className = 'feedback good'; fb.textContent = q.a ? 'Yes, that’s true! ✅' : 'Right, that’s false! ' + (q.why || '');
+        i++; S.frac = i / qs.length; updateHUD();
+        $('#nextRow').hidden = false; $('#nextBtn').focus();
+      } else {
+        tries++; b.disabled = true; b.classList.add('no');
+        fb.className = 'feedback hint'; fb.textContent = 'Read the story again — the answer is there! 🔍';
+        loseHeart();
+      }
+    });
+    $('#nextBtn').addEventListener('click', function(){ if (i < qs.length) show(); else levelComplete(); });
+  }
+  show();
+}
+
+/* ========== 4. FIND THE CORRECT SENTENCE ========== */
+function task4(){
+  var qs = shuffle(CORRECT).slice(0, 8), i = 0;
+  function show(){
+    var q = qs[i], tries = 0, t0 = Date.now();
+    var opts = shuffle([{t:q.ok, ok:true}].concat(q.bad.map(function(b){ return {t:b[0], ok:false, why:b[1]}; })));
+    stage.innerHTML = head(3, 'Only one sentence is correct. Tap it!', (i + 1) + ' / ' + qs.length,
+        'Watch the verb: went, did, played, spent, flew, watched — and the right words together: do housework, play basketball, go hiking.') +
+      '<div class="showcard"><div class="big" aria-hidden="true">' + q.pic + '</div></div>' +
+      '<div class="opts one">' + opts.map(function(o, k){ return '<button type="button" class="opt" data-k="' + k + '">' + o.t + '</button>'; }).join('') + '</div>' +
+      '<p class="feedback" id="fb"></p>' + nextRow(i + 1 < qs.length ? 'Next →' : 'Finish task →');
+    var fb = $('#fb');
+    stage.querySelector('.opts').addEventListener('click', function(e){
+      var b = e.target.closest('.opt'); if (!b || b.disabled) return;
+      var o = opts[+b.dataset.k];
+      if (o.ok){
+        Array.prototype.forEach.call(stage.querySelectorAll('.opt'), function(x){ x.disabled = true; });
+        b.classList.add('yes');
+        reward(tries, t0, 10000);
+        fb.className = 'feedback good'; fb.textContent = 'Yes! “' + q.ok + '” ✓';
+        i++; S.frac = i / qs.length; updateHUD();
+        $('#nextRow').hidden = false; $('#nextBtn').focus();
+      } else {
+        tries++; b.disabled = true; b.classList.add('no');
+        fb.className = 'feedback hint'; fb.textContent = o.why + ' Try again! 🍀';
+        loseHeart();
+      }
+    });
+    $('#nextBtn').addEventListener('click', function(){ if (i < qs.length) show(); else levelComplete(); });
+  }
+  show();
+}
+
+/* ========== 5. FINISH THE PHRASE ========== */
+function task5(){
+  var qs = shuffle(PHRASEGAPS).slice(0, 9), i = 0;
+  var names = {invite:'This phrase invites a friend. 🙋', accept:'This phrase says YES. 👍', refuse:'This phrase says NO — politely. 🙅'};
+  function show(){
+    var q = qs[i], tries = 0, t0 = Date.now();
+    var opts = shuffle([q.a].concat(q.o));
+    stage.innerHTML = head(4, 'One word is missing. Tap the right word to finish the phrase.', (i + 1) + ' / ' + qs.length,
+        'Need help? Tap 📋 Phrase table at the top.') +
+      '<div class="showcard quote"><div class="big" aria-hidden="true">💬</div><p class="phrase">“' + q.p.replace('___', '<span class="blank" id="blank">…</span>') + '”</p></div>' +
+      '<div class="opts">' + opts.map(function(o){ return '<button type="button" class="opt" data-o="' + esc(o) + '">' + o + '</button>'; }).join('') + '</div>' +
+      '<p class="feedback" id="fb"></p>' + nextRow(i + 1 < qs.length ? 'Next →' : 'Finish task →');
+    var fb = $('#fb');
+    stage.querySelector('.opts').addEventListener('click', function(e){
+      var b = e.target.closest('.opt'); if (!b || b.disabled) return;
+      if (b.dataset.o === q.a){
+        Array.prototype.forEach.call(stage.querySelectorAll('.opt'), function(x){ x.disabled = true; });
+        b.classList.add('yes');
+        var bl = $('#blank'); bl.textContent = q.a; bl.classList.add('filled');
+        reward(tries, t0, 7000);
+        fb.className = 'feedback good'; fb.textContent = '“' + q.full + '” ' + names[q.k];
+        i++; S.frac = i / qs.length; updateHUD();
+        $('#nextRow').hidden = false; $('#nextBtn').focus();
+      } else {
+        tries++; b.disabled = true; b.classList.add('no');
+        fb.className = 'feedback hint'; fb.textContent = 'We don’t say that. Say the phrase in your head and try again! 🍀';
+        loseHeart();
+      }
+    });
+    $('#nextBtn').addEventListener('click', function(){ if (i < qs.length) show(); else levelComplete(); });
+  }
+  show();
+}
+
+/* ========== 6. WHAT DO YOU SAY? ========== */
+function task6(){
+  var qs = shuffle(REPLY).slice(0, 8), i = 0;
+  function show(){
+    var q = qs[i], tries = 0, t0 = Date.now();
+    var opts = shuffle([q.a].concat(q.o));
+    var want = q.face === '😃' ? 'You want to say YES. 😃' : 'You want to say NO. 🙁';
+    stage.innerHTML = head(5, 'Your friend invites you. Choose the best answer.', (i + 1) + ' / ' + qs.length, want) +
+      '<div class="bubble"><span class="who" aria-hidden="true">F</span><p>' + q.s + ' ' + q.pic + '</p></div>' +
+      '<div class="opts one">' + opts.map(function(o){ return '<button type="button" class="opt" data-o="' + esc(o) + '">' + o + '</button>'; }).join('') + '</div>' +
+      '<p class="feedback" id="fb"></p>' + nextRow(i + 1 < qs.length ? 'Next →' : 'Finish task →');
+    var fb = $('#fb');
+    stage.querySelector('.opts').addEventListener('click', function(e){
+      var b = e.target.closest('.opt'); if (!b || b.disabled) return;
+      if (b.dataset.o === q.a){
+        Array.prototype.forEach.call(stage.querySelectorAll('.opt'), function(x){ x.disabled = true; });
+        b.classList.add('yes');
+        reward(tries, t0, 8000);
+        fb.className = 'feedback good'; fb.textContent = q.face === '😃' ? 'Perfect — you accepted the invitation! 👍' : 'Perfect — you refused politely and gave a reason! 🙅';
+        i++; S.frac = i / qs.length; updateHUD();
+        $('#nextRow').hidden = false; $('#nextBtn').focus();
+      } else {
+        tries++; b.disabled = true; b.classList.add('no');
+        fb.className = 'feedback hint'; fb.textContent = 'Look at the face again: ' + q.face + ' ' + want + ' 🍀';
+        loseHeart();
+      }
+    });
+    $('#nextBtn').addEventListener('click', function(){ if (i < qs.length) show(); else levelComplete(); });
+  }
+  show();
+}
+
+/* ========== 7. PUT THE DIALOGUE IN ORDER ========== */
+function task7(){
+  var items = shuffle(DIALOGUES).slice(0, 3), i = 0;
+  function show(){
+    var d = items[i];
+    var order;
+    do { order = shuffle(d.lines.map(function(t, k){ return {k:k, t:t}; })); } while (order[0].k === 0 && order[1].k === 1);
+    var placed = [], tries = 0, solved = false, t0 = Date.now();
+    stage.innerHTML = head(6, 'Tap the lines in the right order to make a dialogue. Tap a line again to take it back.', (i + 1) + ' / ' + items.length,
+        'A starts the dialogue. The friend (B) answers.') +
+      '<h3 style="margin:0;font-family:var(--display);font-size:1.15rem">' + d.title + '</h3>' +
+      '<div class="dlines" id="strip"></div><div class="dlines" id="tray"></div><p class="feedback" id="fb"></p>' +
+      '<div class="next-row" id="ctrl"><button type="button" class="btn ghost" id="clearBtn">↺ Start again</button>' +
+      '<button type="button" class="btn primary" id="checkBtn" disabled>Check ✓</button></div>' +
+      nextRow(i + 1 < items.length ? 'Next dialogue →' : 'Finish task →');
+    var strip = $('#strip'), tray = $('#tray'), fb = $('#fb');
+    function lineHTML(o, pos){
+      var who = pos === null ? '?' : (pos % 2 === 0 ? 'A' : 'B');
+      return '<button type="button" class="dline' + (pos !== null && pos % 2 ? ' b' : '') + '" data-k="' + o.k + '"><span class="who">' + who + '</span><span>' + o.t + '</span></button>';
+    }
+    function find(k){ return order.filter(function(o){ return o.k === k; })[0]; }
+    function draw(){
+      strip.innerHTML = placed.map(function(k, pos){ return lineHTML(find(k), pos); }).join('');
+      tray.innerHTML = order.filter(function(o){ return placed.indexOf(o.k) < 0; }).map(function(o){ return lineHTML(o, null); }).join('');
+      $('#checkBtn').disabled = placed.length !== d.lines.length;
+    }
+    draw();
+    tray.addEventListener('click', function(e){ var b = e.target.closest('.dline'); if (!b || solved) return; placed.push(+b.dataset.k); draw(); });
+    strip.addEventListener('click', function(e){
+      var b = e.target.closest('.dline'); if (!b || solved) return;
+      var k = +b.dataset.k; placed = placed.filter(function(x){ return x !== k; }); draw();
+    });
+    $('#clearBtn').addEventListener('click', function(){ if (!solved){ placed = []; draw(); } });
+    $('#checkBtn').addEventListener('click', function(){
+      if (solved || placed.length !== d.lines.length) return;
+      var ok = placed.every(function(k, pos){ return k === pos; });
+      if (ok){
+        solved = true; reward(tries, t0, 40000);
+        fb.className = 'feedback good'; fb.textContent = 'Perfect! Now read the dialogue aloud with your teacher. 🎤';
+        $('#ctrl').hidden = true; $('#nextRow').hidden = false; $('#nextBtn').focus();
+        i++; S.frac = i / items.length; updateHUD();
+      } else {
+        tries++; loseHeart();
+        var firstBad = 0;
+        for (var p = 0; p < placed.length; p++){ if (placed[p] !== p){ firstBad = p; break; } }
+        fb.className = 'feedback hint';
+        fb.textContent = tries === 1 ? 'Almost! Line ' + (firstBad + 1) + ' is in the wrong place. 🍀'
+                                     : 'Tip: line ' + (firstBad + 1) + ' is “' + d.lines[firstBad] + '”';
+        placed = placed.slice(0, firstBad); draw();
+      }
+    });
+    $('#nextBtn').addEventListener('click', function(){ if (i < items.length) show(); else levelComplete(); });
+  }
+  show();
+}
+
+/* ========== 8. MAKE YOUR OWN DIALOGUE ========== */
+function task8(){
+  var lines = [], step = 0;
+  function render(){
+    if (step >= STEPS.length){ finishDialogue(); return; }
+    var st = STEPS[step];
+    stage.innerHTML = head(7, 'Now make your own dialogue! Tap a phrase or write your own words, then add the line.', (step + 1) + ' / ' + STEPS.length,
+        'Invite · Accept · Refuse — tap 📋 Phrase table at the top if you need help.') +
+      '<div class="dlist" id="dlist"></div>' +
+      '<div class="stepbox"><div class="who-label">Line ' + (step + 1) + ' — ' + st.label + ' (' + st.who + ')</div>' +
+      '<h3>' + st.task + '</h3>' +
+      '<div class="chips" id="chips">' + st.chips.map(function(c){ return '<button type="button" class="chipbtn">' + c + '</button>'; }).join('') + '</div>' +
+      '<label for="line" class="instr" style="font-size:.95rem">Your line (you can change the words):</label>' +
+      '<textarea id="line" maxlength="200" placeholder="Write your line here…"></textarea>' +
+      '<div class="next-row"><button type="button" class="btn green" id="addBtn">Add this line ↓</button>' +
+      (step > 0 ? '<button type="button" class="btn ghost" id="undoBtn">↺ Delete last line</button>' : '') + '</div>' +
+      '<p class="feedback" id="fb"></p></div>';
+    drawList();
+    var ta = $('#line'), fb = $('#fb');
+    $('#chips').addEventListener('click', function(e){
+      var b = e.target.closest('.chipbtn'); if (!b) return;
+      ta.value = b.textContent; ta.focus();
+    });
+    $('#addBtn').addEventListener('click', function(){
+      var text = ta.value.trim().replace(/\s+/g, ' ');
+      if ((text.match(/[A-Za-z']+/g) || []).length < 2){
+        fb.className = 'feedback hint'; fb.textContent = 'Write a little more — or tap one of the phrases above. ✏️'; return;
+      }
+      lines.push({who:st.who, t:text});
+      addPts(10); toast(praise() + ' +10');
+      step++; S.frac = step / (STEPS.length + 1); updateHUD();
+      render();
+    });
+    if ($('#undoBtn')) $('#undoBtn').addEventListener('click', function(){
+      if (!lines.length) return;
+      lines.pop(); step = Math.max(0, step - 1); S.frac = step / (STEPS.length + 1); updateHUD(); render();
+    });
+  }
+  function drawList(){
+    var box = $('#dlist'); if (!box) return;
+    box.innerHTML = lines.map(function(l){
+      return '<div class="bubble' + (l.who === 'B' ? ' b' : '') + '"><span class="who" aria-hidden="true">' + l.who + '</span><p>' + esc(l.t) + '</p></div>';
+    }).join('');
+  }
+  function finishDialogue(){
+    addPts(20); toast('Your dialogue is ready! +20 🎉');
+    S.frac = 1; updateHUD();
+    stage.innerHTML = head(7, 'Here is your dialogue. Read it aloud with your teacher — one of you is A, the other is B!') +
+      '<div class="dlist" id="dlist"></div>' +
+      '<p class="tip">🎤 Read it twice: first you are A, then you are B. Try to say it without looking!</p>' +
+      '<div class="next-row"><button type="button" class="btn ghost" id="againBtn">↺ Make another dialogue</button>' +
+      '<button type="button" class="btn primary" id="doneBtn">Finish 🏁</button></div>';
+    drawList();
+    $('#againBtn').addEventListener('click', function(){ lines = []; step = 0; render(); });
+    $('#doneBtn').addEventListener('click', levelComplete);
+  }
+  render();
+}
+
+/* ================= FINAL ================= */
+function finalScreen(){
+  S.screen = 'final'; updateHUD();
+  var sc = total(), ratio = sc / MAX;
+  var msg = ratio >= 0.7 ? 'Fantastic! You can talk about your free time and make plans in English! 🏆'
+          : ratio >= 0.45 ? 'Great job! Your Past Simple and your invitations are getting stronger! 💪'
+          : 'Good work! Let’s practise a little more and play again! 🌱';
+  var verbs = [['go','went'],['do','did'],['play','played'],['spend','spent'],['fly','flew'],['watch','watched'],['enjoy','enjoyed'],['hate','hated'],['dislike','disliked'],['stay','stayed']];
+  stage.innerHTML = '<div class="center"><div class="big-emoji">🏆💬🪁</div><h2>LET’S GO OUT — COMPLETE!</h2>' +
+    '<div class="scorebig">' + sc + '</div><p><b>Score: ' + sc + '</b></p><p class="magic">' + msg + '</p>' +
+    '<div class="review"><h3>Past Simple</h3><div class="wgrid">' +
+      verbs.map(function(v){ return '<div><b>' + v[0] + '</b> <i>→ ' + v[1] + '</i></div>'; }).join('') +
+    '</div><h3>Free-time words</h3><div class="wgrid">' +
+      PAIRS.map(function(p){ return '<div>' + p.pic + ' <b>' + p.w + '</b> <i>' + p.ru + '</i></div>'; }).join('') +
+    '</div><h3>Invite · Accept · Refuse</h3><div class="ptable">' +
+      '<div class="pcol"><h3>Invite</h3><ol><li>Let’s go to the park!</li><li>How about going hiking?</li><li>Why don’t we fly a kite?</li><li>Do you want to go shopping?</li><li>Shall we watch the stars?</li></ol></div>' +
+      '<div class="pcol"><h3>Accept</h3><ol><li>Sounds good!</li><li>Why not?</li><li>Good idea!</li><li>Yes, let’s! I’d love to.</li></ol></div>' +
+      '<div class="pcol"><h3>Refuse</h3><ol><li>I don’t think it’s a good idea.</li><li>Sorry, I can’t. I’m busy.</li><li>I’d rather stay inside.</li><li>Sorry, maybe next time.</li></ol></div>' +
+    '</div></div>' +
+    '<div class="next-row"><button type="button" class="btn primary" id="againBtn">🔄 PLAY AGAIN</button>' +
+    '<button type="button" class="btn phrases" id="phrBtn2">📋 Phrase table</button></div></div>';
+  cheer('You finished all eight tasks! 🎉');
+  $('#againBtn').addEventListener('click', function(){
+    for (var k = 0; k < N; k++){ S.pts[k] = 0; S.done[k] = false; }
+    startLevel(0);
+  });
+  $('#phrBtn2').addEventListener('click', openPhr);
+}
+
+/* ================= PHRASE TABLE ================= */
+function openPhr(){ $('#phrModal').hidden = false; $('#phrClose').focus(); }
+$('#phrBtn').addEventListener('click', openPhr);
+$('#phrClose').addEventListener('click', function(){ $('#phrModal').hidden = true; });
+$('#phrModal').addEventListener('click', function(e){ if (e.target.id === 'phrModal') $('#phrModal').hidden = true; });
+document.addEventListener('keydown', function(e){ if (e.key === 'Escape') $('#phrModal').hidden = true; });
+
+intro();
+})();
+</script>
+</body>
+</html>

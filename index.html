@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>English Practice</title>
+<style>
+:root{
+  --paper:#FAF5EC; --card:#FFFFFF; --ink:#2A2521; --ink-soft:#6B6158; --muted:#998F85;
+  --rule:#E6DCCB; --rust:#A8562F; --gold:#9C7B3C; --brown:#46372A;
+  --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+  --sans:"Segoe UI",-apple-system,Helvetica,Arial,sans-serif;
+  color-scheme: light;
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--sans); font-size:17px; line-height:1.6;
+  padding-inline:18px; padding-block:calc(28px + env(safe-area-inset-top,0px)) 56px}
+.wrap{max-width:720px; margin:0 auto}
+.eyebrow{font-size:.7rem; letter-spacing:.18em; text-transform:uppercase; color:var(--gold); font-weight:700; margin:0}
+h1{font-family:var(--serif); font-weight:400; font-size:clamp(1.8rem,5.5vw,2.5rem); line-height:1.15; margin:.35em 0 0}
+h1 em{font-style:italic; color:var(--rust)}
+.meta{margin:.5em 0 0; font-size:.88rem; color:var(--muted)}
+hr{border:0; border-top:1px solid var(--rule); margin:18px 0 0}
+ul{list-style:none; margin:22px 0 0; padding:0; display:flex; flex-direction:column; gap:14px}
+a.card{display:block; text-decoration:none; color:inherit; background:var(--card); border:1px solid var(--rule); border-radius:4px;
+  padding:18px 20px; transition:border-color .15s, transform .1s}
+a.card:hover{border-color:var(--rust)}
+a.card:active{transform:translateY(1px)}
+a.card h2{font-family:var(--serif); font-weight:400; font-size:1.3rem; margin:0 0 4px}
+a.card h2 em{font-style:italic; color:var(--rust)}
+a.card p{margin:0; font-size:.93rem; color:var(--ink-soft)}
+a.card .lvl{display:inline-block; margin-top:8px; font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; color:var(--muted)}
+footer{margin-top:28px; font-size:.85rem; color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Grammar &amp; Vocabulary</p>
+  <h1>English Practice — <em>interactive pages</em></h1>
+  <p class="meta">Open any page, work through the exercises, repeat as often as you like. Nothing to install, nothing to sign in to.</p>
+  <hr>
+  <ul>
+    <li><a class="card" href="past-simple.html">
+      <h2>Past Simple — <em>Yesterday, Last Week, Ago</em></h2>
+      <p>15 exercises: verb forms, spelling of -ed, irregular verbs, was / were, statements, negatives, questions and question words, a story, a mistake hunt and free writing.</p>
+      <span class="lvl">A1–A2</span></a></li>
+    <li><a class="card" href="conditionals.html">
+      <h2>Conditionals — <em>If, Would, Would Have</em></h2>
+      <p>10 exercises on types 0, 1, 2 and 3: each type on its own first, then spotting the type, mixed forms, a letter with gaps and rewriting situations.</p>
+      <span class="lvl">B1–B2</span></a></li>
+    <li><a class="card" href="invitations.html">
+      <h2>Autumn Invitations — <em>Let’s Go Out</em></h2>
+      <p>9 exercises on free-time vocabulary and dialogues: feelings, matching invitations with answers, missing lines, dialogue order and building your own dialogue.</p>
+      <span class="lvl">A2</span></a></li>
+    <li><a class="card" href="lets-go-out.html">
+      <h2>Free Time — <em>Past Simple &amp; Invitations</em></h2>
+      <p>8 exercises: free-time words, go / do / play / spend, reading, invitation phrases, polite answers and a dialogue to put in order.</p>
+      <span class="lvl">A2</span></a></li>
+  </ul>
+  <footer>Made for English lessons. Works offline once the page is open.</footer>
+</div>
+</body>
+</html>
