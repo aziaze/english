@@ -104,6 +104,11 @@ h2{font-size:clamp(1.35rem,4.3vw,1.9rem); line-height:1.22; margin:.3em 0 0}
 .passage .slot.cur{border-bottom:2px solid var(--rust); background:var(--rust-soft); color:var(--rust); font-style:italic}
 .passage .slot.done{border-bottom-color:var(--sage); color:var(--sage); font-style:italic}
 .passage .sig{display:block; margin-top:10px; color:var(--muted); font-style:italic; font-size:.95rem}
+.story{font-family:var(--serif); font-size:1.06rem; line-height:1.8; background:#FFFDF8; border:1px solid var(--rule); padding:18px 20px; border-radius:3px; display:flex; flex-direction:column; gap:10px}
+.story p{margin:0}
+.story p b{font-style:italic; color:var(--rust)}
+.story .waiting{color:var(--muted); font-style:italic}
+.story .theend{margin-top:6px; color:var(--rust); font-style:italic}
 
 textarea{width:100%; min-height:80px; resize:vertical; border:1px solid var(--rule); border-radius:3px; padding:12px 14px; font-family:var(--serif); font-size:1.06rem; background:#fff; color:var(--ink)}
 .prompts{display:flex; flex-direction:column; gap:8px}
@@ -223,10 +228,10 @@ var IMAGES = {cottage:'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAA
 /* ============ CONTENT ============ */
 var TASKS = [
   {n:'Verb forms', title:'Verb Forms — <em>Today and Yesterday</em>', meta:'8 pairs · match the two forms', plate:'cottage', cap:'Step one'},
-  {n:'Spelling', title:'Regular Verbs — <em>The -ed Ending</em>', meta:'8 verbs · spelling rules', plate:'patch', cap:'Spelling'},
+  {n:'Now or then?', title:'Now or Then — <em>Which Tense?</em>', meta:'8 sentences · the time word decides', plate:'patch', cap:'When?'},
   {n:'Irregular', title:'Irregular Verbs — <em>No Rules</em>', meta:'8 verbs · learn them by heart', plate:'witch', cap:'By heart'},
   {n:'was / were', title:'The Verb <em>be</em> — was and were', meta:'8 sentences · was, were, wasn’t, weren’t', plate:'cottage', cap:'To be'},
-  {n:'Statements', title:'Statements — <em>What Happened</em>', meta:'8 sentences · positive sentences', plate:'patch', cap:'Positive'},
+  {n:'Time words', title:'Time Words — <em>When Did It Happen?</em>', meta:'8 sentences · yesterday, last night, ago', plate:'patch', cap:'Finished'},
   {n:'Build it', title:'Build a Sentence — <em>Word Order</em>', meta:'5 sentences · put the words in order', plate:'witch', cap:'Order'},
   {n:'Negatives', title:'Negatives — <em>didn’t</em>', meta:'8 sentences · what did not happen', plate:'cottage', cap:'Negative'},
   {n:'Make negative', title:'Make It Negative — <em>Change the Sentence</em>', meta:'6 sentences · choose the right version', plate:'patch', cap:'Change'},
@@ -236,7 +241,7 @@ var TASKS = [
   {n:'Wh-questions', title:'Wh-Questions — <em>One Is Correct</em>', meta:'8 items · find the correct question', plate:'witch', cap:'Correct?'},
   {n:'A story', title:'A Story — <em>Fill the Gaps</em>', meta:'6 gaps · one continuous text', plate:'cottage', cap:'Reading'},
   {n:'Find the mistake', title:'Find the Correct Sentence', meta:'8 items · all three forms mixed', plate:'patch', cap:'Mixed'},
-  {n:'Your turn', title:'Your Turn — <em>Write About Yesterday</em>', meta:'3+ answers · free writing', plate:'witch', cap:'Writing'}
+  {n:'The story', title:'The Halloween Walk — <em>A Story to Unlock</em>', meta:'12 steps · the story grows with every answer', plate:'witch', cap:'Story'}
 ];
 
 var PAIRS = [
@@ -245,19 +250,19 @@ var PAIRS = [
   ['play','played'], ['watch','watched'], ['study','studied'], ['stop','stopped'], ['visit','visited'], ['live','lived']
 ];
 
-var SPELL = [
-  {v:'stop', a:'stopped', o:['stoped','stopt'], why:'One vowel + one consonant at the end, so we double the consonant: stop — stopped.'},
-  {v:'study', a:'studied', o:['studyed','studed'], why:'Consonant + y, so y becomes i: study — studied.'},
-  {v:'play', a:'played', o:['plaied','plaid'], why:'Vowel + y, so we only add -ed: play — played.'},
-  {v:'like', a:'liked', o:['likeed','likd'], why:'The verb ends in e, so we add only -d: like — liked.'},
-  {v:'carry', a:'carried', o:['carryed','carred'], why:'Consonant + y, so y becomes i: carry — carried.'},
-  {v:'watch', a:'watched', o:['watchd','watchied'], why:'A normal verb: just add -ed.'},
-  {v:'plan', a:'planned', o:['planed','plend'], why:'One vowel + one consonant, so we double the n: plan — planned.'},
-  {v:'try', a:'tried', o:['tryed','tryied'], why:'Consonant + y, so y becomes i: try — tried.'},
-  {v:'dance', a:'danced', o:['danceed','dancd'], why:'The verb ends in e, so we add only -d.'},
-  {v:'open', a:'opened', o:['openned','opend'], why:'The stress is not on the last part, so we do not double the n.'},
-  {v:'cook', a:'cooked', o:['cookd','cookied'], why:'A normal verb: just add -ed.'},
-  {v:'help', a:'helped', o:['helpped','helpd'], why:'Two consonants at the end, so nothing is doubled.'}
+var TENSE = [
+  {s:'Every Saturday my mum ___ pumpkin soup.', cue:'make', a:'makes', o:['made','will make'], why:'“Every Saturday” means it happens again and again, so we use the present.'},
+  {s:'Last Saturday my mum ___ pumpkin soup.', cue:'make', a:'made', o:['makes','will make'], why:'“Last Saturday” is finished, so we need the Past Simple.'},
+  {s:'Yesterday we ___ to the park after school.', cue:'go', a:'went', o:['go','will go'], why:'“Yesterday” is finished time: go becomes went.'},
+  {s:'We usually ___ to the park on Sundays.', cue:'go', a:'go', o:['went','are going'], why:'“Usually” means a habit, so we stay in the present.'},
+  {s:'I ___ television every evening.', cue:'watch', a:'watch', o:['watched','will watch'], why:'“Every evening” is a habit now, not the past.'},
+  {s:'I ___ television all evening yesterday.', cue:'watch', a:'watched', o:['watch','am watching'], why:'“Yesterday” is finished, so watch becomes watched.'},
+  {s:'Two days ago she ___ a Halloween costume.', cue:'buy', a:'bought', o:['buys','will buy'], why:'“Two days ago” is past time: buy becomes bought.'},
+  {s:'She often ___ her clothes online.', cue:'buy', a:'buys', o:['bought','is buying'], why:'“Often” is a habit, so we use the present.'},
+  {s:'Last night it ___ for three hours.', cue:'rain', a:'rained', o:['rains','will rain'], why:'“Last night” is over, so we use the Past Simple.'},
+  {s:'It usually ___ a lot here in October.', cue:'rain', a:'rains', o:['rained','is raining'], why:'“Usually” tells us this is normal, not a past event.'},
+  {s:'In 2019 my family ___ in another city.', cue:'live', a:'lived', o:['lives','will live'], why:'A year in the past needs the Past Simple.'},
+  {s:'Now we ___ near the sea.', cue:'live', a:'live', o:['lived','will live'], why:'“Now” is the present, not the past.'}
 ];
 
 var IRREG = [
@@ -288,17 +293,19 @@ var BE = [
   {s:'My parents ___ at work yesterday. They were at home.', a:'weren’t', o:['didn’t','wasn’t'], why:'They — weren’t.'}
 ];
 
-var STATE = [
-  {s:'Yesterday I ___ a new film.', cue:'watch', a:'watched', o:['watch','watches'], why:'A regular verb: watch — watched.'},
-  {s:'Last summer we ___ to Spain.', cue:'go', a:'went', o:['goed','go'], why:'go — went.'},
-  {s:'She ___ a new bag on Saturday.', cue:'buy', a:'bought', o:['buyed','buy'], why:'buy — bought.'},
-  {s:'They ___ football in the park.', cue:'play', a:'played', o:['plaied','play'], why:'Vowel + y: play — played.'},
-  {s:'My brother ___ all the cake.', cue:'eat', a:'ate', o:['eated','eaten'], why:'eat — ate.'},
-  {s:'We ___ English for two hours last night.', cue:'study', a:'studied', o:['studyed','study'], why:'Consonant + y: study — studied.'},
-  {s:'He ___ a lot of photos in the garden.', cue:'take', a:'took', o:['taked','taken'], why:'take — took.'},
-  {s:'The train ___ at every station.', cue:'stop', a:'stopped', o:['stoped','stops'], why:'One vowel + one consonant: stop — stopped.'},
-  {s:'I ___ my grandma on Sunday.', cue:'see', a:'saw', o:['seed','seen'], why:'see — saw.'},
-  {s:'You ___ a very nice letter.', cue:'write', a:'wrote', o:['writed','written'], why:'write — wrote.'}
+var TIMEWORDS = [
+  {s:'I visited my grandma ___.', a:'yesterday', o:['tomorrow','next week'], why:'The verb is visited, so the time must be finished: yesterday.'},
+  {s:'She bought a big pumpkin ___.', a:'last Sunday', o:['next Sunday','tomorrow'], why:'bought is the past, so we need a past time: last Sunday.'},
+  {s:'They were at school ___.', a:'two days ago', o:['tomorrow morning','next month'], why:'“ago” always goes with the Past Simple.'},
+  {s:'I didn’t sleep well ___.', a:'last night', o:['tonight','tomorrow night'], why:'didn’t sleep is the past, so the night is over: last night.'},
+  {s:'We moved to this house ___.', a:'in 2020', o:['in 2030','next year'], why:'A finished year goes with the Past Simple.'},
+  {s:'___ we watched a scary film together.', a:'Last Friday', o:['Next Friday','Tomorrow'], why:'watched is the past, so the day has already happened.'},
+  {s:'My dad made soup ___.', a:'an hour ago', o:['in an hour','soon'], why:'“an hour ago” is past; “in an hour” is future.'},
+  {s:'Did you wear a costume ___?', a:'last Halloween', o:['next Halloween','tomorrow'], why:'A question with did asks about finished time.'},
+  {s:'___ I ate too much chocolate.', a:'Last night', o:['Tonight','In a minute'], why:'ate is the past form, so the night is finished.'},
+  {s:'The shop closed ___.', a:'five minutes ago', o:['in five minutes','soon'], why:'closed is the past: the shop is already shut.'},
+  {s:'We saw the fireworks ___.', a:'last weekend', o:['next weekend','in two days'], why:'saw is the past form of see.'},
+  {s:'My brother was born ___.', a:'in 2015', o:['in 2035','next spring'], why:'“was born” is always about finished past time.'}
 ];
 
 var BUILD_S = [
@@ -467,16 +474,24 @@ var CORRECT = [
     ['I was tired, so I goed to bed early.','go — went.']]}
 ];
 
-var WRITING = [
-  {p:'What did you do yesterday evening?', need:'past', hint:'Use a past form: watched, played, read, went.', model:'Yesterday evening I watched a film and then I read a book.'},
-  {p:'Where did you go last weekend?', need:'past', hint:'Start with I went …', model:'Last weekend I went to my friend’s house in the country.'},
-  {p:'Write one negative sentence about yesterday.', need:'neg', hint:'Use didn’t, wasn’t or weren’t.', model:'I didn’t go to school yesterday because it was Sunday.'},
-  {p:'Write a question with “did” about my weekend.', need:'qdid', hint:'Start with Did and finish with a question mark.', model:'Did you go to the cinema at the weekend?'},
-  {p:'Write a question with “where” about yesterday.', need:'qwh', hint:'Where + did + you + verb … ?', model:'Where did you have lunch yesterday?'},
-  {p:'What was the weather like yesterday?', need:'be', hint:'Use was or wasn’t.', model:'It was cold and rainy yesterday.'},
-  {p:'Write about a holiday: two sentences.', need:'past', hint:'Use past forms: went, stayed, saw, ate.', model:'Last summer we went to Italy. We stayed in a small hotel near the sea.'},
-  {p:'Write a question with “what time” about this morning.', need:'qwh', hint:'What time + did + you + verb … ?', model:'What time did you get up this morning?'}
-];
+var HALLOWEEN = {
+  title:'The Halloween Walk',
+  end:'The End. Next year Nina and I want to be two friendly ghosts.',
+  steps:[
+    {t:'Last Friday ___ the 31st of October.', cue:'be', a:'was', o:['is','will be'], why:'“Last Friday” is finished time, so we use was.'},
+    {t:'After school my friend Nina ___ to my house with a big bag.', cue:'come', a:'came', o:['comes','is coming'], why:'The story happened last Friday, so come becomes came.'},
+    {t:'In the garden we ___ two orange pumpkins under the old tree.', cue:'find', a:'found', o:['find','will find'], why:'find — found. Everything in this story is already over.'},
+    {t:'My dad ___ us to carve them, and we made two funny faces.', cue:'help', a:'helped', o:['helps','is helping'], why:'A regular verb in the past: help — helped.'},
+    {t:'At six o’clock we ___ our costumes: a witch and a black cat.', cue:'wear', a:'wore', o:['wear','will wear'], why:'“At six o’clock” that evening is past time: wear — wore.'},
+    {t:'Outside it ___ cold and very dark.', cue:'be', a:'was', o:['is','was being'], why:'For a description in the past we use was.'},
+    {t:'We ___ to the first house and said, “Trick or treat!”', cue:'go', a:'went', o:['go','are going'], why:'go — went. The evening is finished.'},
+    {t:'Mrs Kowalska ___ us a big bowl of sweets.', cue:'give', a:'gave', o:['gives','will give'], why:'give — gave.'},
+    {t:'Then we ___ a strange noise behind the trees.', cue:'hear', a:'heard', o:['hear','are hearing'], why:'hear — heard.'},
+    {t:'Nina ___ afraid, but it was only a small black cat.', cue:'be', a:'was', o:['is','will be'], why:'She — was. The sentence next to it is also in the past.'},
+    {t:'We ___ home at nine o’clock with two full bags.', cue:'get', a:'got', o:['get','will get'], why:'get — got.'},
+    {t:'That night I ___ very well and dreamt about pumpkins.', cue:'sleep', a:'slept', o:['sleep','am sleeping'], why:'sleep — slept. “That night” is over.'}
+  ]
+};
 
 var PRAISE = ['Exactly.', 'That is right.', 'Correct.', 'Well done.', 'Perfect.', 'Yes, that is it.'];
 function praise(){ return PRAISE[Math.floor(Math.random() * PRAISE.length)]; }
@@ -774,89 +789,65 @@ function exStory(){
   show();
 }
 
-/* ---------- 15. WRITING ---------- */
-function exWrite(){
-  var prompts = shuffle(WRITING).slice(0, 6);
-  var answers = {}, cur = 0, NEED = 3;
-  var IRR = ['went','saw','had','ate','drank','took','made','bought','got','gave','came','wrote','read','ran','swam','sat','slept','said','told','thought','found','left','was','were','did','met','felt','knew','spent','woke','put','lost','won','flew','heard','began','sang','wore','brought','kept','built','drove','rode','stood','understood'];
-  function test(text, need){
-    var t = text.toLowerCase().replace(/[‘’]/g, "'");
-    var hasNeg = /did ?n't|didn't|did not|wasn't|was not|weren't|were not/.test(t);
-    var hasPast = /\b\w+ed\b/.test(t) || IRR.some(function(v){ return new RegExp('\\b' + v + '\\b').test(t); });
-    if (need === 'neg') return hasNeg;
-    if (need === 'qdid') return /^did\b/.test(t.trim()) && /\?/.test(t);
-    if (need === 'qwh') return /^(where|when|what|who|why|how|what time|how much)\b/.test(t.trim()) && /\bdid\b|\bwas\b|\bwere\b/.test(t) && /\?/.test(t);
-    if (need === 'be') return /\bwas\b|\bwere\b|wasn't|weren't/.test(t);
-    return hasPast;
+/* ---------- 15. STORY TO UNLOCK ---------- */
+function exHalloween(){
+  var H = HALLOWEEN, i = 0, done = [];
+  function book(){
+    var html = done.map(function(line){ return '<p>' + line + '</p>'; }).join('');
+    if (i >= H.steps.length) html += '<p class="theend">' + H.end + '</p>';
+    return html || '<p class="waiting">The story starts with your first answer.</p>';
   }
-  function draw(){
-    $('#prompts').innerHTML = prompts.map(function(p, k){
-      return '<button type="button" class="prompt' + (k === cur ? ' cur' : '') + (answers[k] ? ' done' : '') + '" data-k="' + k + '">' +
-        '<span class="n">' + (k + 1) + '</span><span>' + p.p + '</span></button>';
-    }).join('');
-    var n = Object.keys(answers).length;
-    $('#needTxt').textContent = n >= NEED ? n + ' sentences written. You can finish, or write more.' : 'Written: ' + n + ' of ' + NEED;
-    $('#finishBtn').disabled = n < NEED;
-    $('#book').innerHTML = Object.keys(answers).map(function(k){
-      return '<p><small>' + prompts[k].p + '</small>' + esc(answers[k]) + '</p>';
-    }).join('');
-    S.frac = Math.min(n, NEED) / (NEED + 1); updateHUD();
+  function show(){
+    if (i >= H.steps.length){ finish(); return; }
+    var q = H.steps[i], tries = 0;
+    var choices = shuffle([q.a].concat(q.o));
+    stage.innerHTML = head(14, 'Read on, one sentence at a time',
+        'Everything in this story happened <b>last Friday</b>. Choose the right verb and the next part of the story appears.',
+        'part ' + (i + 1) + ' of ' + H.steps.length) +
+      '<div class="clear"></div><h3 style="margin:0">' + H.title + '</h3>' +
+      '<div class="story" id="book">' + book() + '</div>' +
+      '<p class="sentence">' + q.t.replace('___', '<span class="gap" id="gap">?</span>') + ' <span class="cue">(' + q.cue + ')</span></p>' +
+      '<div class="opts row">' + choices.map(function(o){ return '<button type="button" class="opt center" data-o="' + esc(o) + '"><span class="serif">' + o + '</span></button>'; }).join('') + '</div>' +
+      '<p class="verdict" id="fb"></p>' + nextRow(i + 1 < H.steps.length ? 'Read on' : 'Finish the story');
+    var fb = $('#fb');
+    stage.querySelector('.opts').addEventListener('click', function(e){
+      var b = e.target.closest('.opt'); if (!b || b.disabled) return;
+      if (b.dataset.o === q.a){
+        Array.prototype.forEach.call(stage.querySelectorAll('.opt'), function(x){ x.disabled = true; });
+        b.classList.add('yes');
+        var g = $('#gap'); g.textContent = q.a; g.classList.add('filled');
+        done.push(q.t.replace('___', '<b>' + q.a + '</b>'));
+        $('#book').innerHTML = book();
+        score(tries);
+        fb.className = 'verdict good'; fb.innerHTML = praise() + ' ' + q.why;
+        i++; S.frac = i / H.steps.length; updateHUD();
+        $('#nextRow').hidden = false; $('#nextBtn').focus();
+      } else {
+        tries++; b.disabled = true; b.classList.add('no');
+        fb.className = 'verdict bad'; fb.innerHTML = 'Not that one. The whole story happened last Friday — which form belongs to the past?';
+      }
+    });
+    $('#nextBtn').addEventListener('click', show);
   }
-  function select(k){
-    cur = k;
-    $('#pTitle').textContent = prompts[k].p;
-    $('#pHint').textContent = prompts[k].hint;
-    $('#ans').value = answers[k] || '';
-    $('#model').hidden = true;
-    $('#fb').textContent = ''; $('#fb').className = 'verdict';
-    draw();
+  function finish(){
+    S.frac = 1; updateHUD();
+    stage.innerHTML = head(14, H.title, 'Here is the whole story. Read it aloud — every verb is in the Past Simple.') +
+      '<div class="clear"></div><div class="story" id="book">' + book() + '</div>' +
+      '<div class="actions"><button type="button" class="btn light" id="againBtn">Read it again from the start</button>' +
+      '<button type="button" class="btn" id="doneBtn">Finish</button></div>';
+    $('#againBtn').addEventListener('click', function(){ i = 0; done = []; show(); });
+    $('#doneBtn').addEventListener('click', taskComplete);
   }
-  stage.innerHTML = head(14, 'Write your own sentences', 'Choose a question, write your answer, and the page will check the grammar pattern. Write at least three sentences. There is a model answer if you need one.') +
-    '<div class="clear"></div><div class="prompts" id="prompts"></div>' +
-    '<div style="border:1px solid var(--rule);border-radius:3px;padding:16px;display:flex;flex-direction:column;gap:12px;background:#FFFDF8">' +
-      '<p class="sentence" id="pTitle" style="margin:0"></p>' +
-      '<p class="lead" id="pHint"></p>' +
-      '<label for="ans" class="cue">Your sentence</label>' +
-      '<textarea id="ans" maxlength="240" placeholder="Write the whole sentence here"></textarea>' +
-      '<div class="actions"><button type="button" class="btn" id="addBtn">Check and save</button>' +
-      '<button type="button" class="btn light" id="modelBtn">Show a model answer</button></div>' +
-      '<p class="model" id="model" hidden></p><p class="verdict" id="fb"></p></div>' +
-    '<div class="book" id="book"></div>' +
-    '<div class="actions"><span class="cue" id="needTxt"></span><button type="button" class="btn" id="finishBtn" disabled>Finish the set</button></div>';
-  $('#prompts').addEventListener('click', function(e){ var b = e.target.closest('.prompt'); if (b){ select(+b.dataset.k); $('#ans').focus(); } });
-  $('#modelBtn').addEventListener('click', function(){ var m = $('#model'); m.hidden = false; m.textContent = prompts[cur].model; });
-  $('#addBtn').addEventListener('click', function(){
-    var text = $('#ans').value.trim().replace(/\s+/g, ' '), fb = $('#fb');
-    if ((text.match(/[A-Za-z']+/g) || []).length < 3){
-      fb.className = 'verdict bad'; fb.textContent = 'Write a few more words to finish the sentence.'; return;
-    }
-    var p = prompts[cur], first = !answers[cur];
-    answers[cur] = text;
-    if (test(text, p.need)){
-      if (first){ addPts(10); S.items++; S.first++; updateHUD(); toast(praise() + '  +10'); }
-      fb.className = 'verdict good'; fb.textContent = praise() + ' That is the right pattern. Your sentence is saved below.';
-    } else {
-      if (first){ addPts(5); S.items++; updateHUD(); toast('Saved  +5'); }
-      fb.className = 'verdict bad'; fb.textContent = 'Good idea, but check the grammar: ' + p.hint + ' You can compare with the model answer.';
-    }
-    draw();
-  });
-  $('#finishBtn').addEventListener('click', function(){
-    if (Object.keys(answers).length < NEED) return;
-    addPts(20); toast('Set complete  +20');
-    $('#finishBtn').disabled = true;
-    later(taskComplete, 500);
-  });
-  select(0);
+  show();
 }
 
 /* ---------- task list ---------- */
 var RUN = [
   exMatch,
-  function(){ exWord(1, SPELL, 8, 'Choose the correct -ed form', 'All these verbs are regular, but the spelling changes. Look at the end of the verb before you choose.'); },
+  function(){ exGap(1, TENSE, 8, 'Present or past?', 'Look for the time word first: <i>every Saturday, usually, now</i> mean today; <i>yesterday, last night, two days ago, in 2019</i> mean the past.', true); },
   function(){ exWord(2, IRREG, 8, 'Choose the past form', 'Irregular verbs do not take -ed. Two of the three forms are wrong — one of them is often the third form (gone, eaten, seen).'); },
   function(){ exGap(3, BE, 8, 'was, were, wasn’t or weren’t', 'The verb <i>be</i> is special: it has its own past forms and it never uses <i>did</i>.', true); },
-  function(){ exGap(4, STATE, 8, 'Complete the sentence', 'These are positive sentences. The verb in brackets is in the first form — put it into the Past Simple.', true); },
+  function(){ exGap(4, TIMEWORDS, 8, 'Choose the time expression', 'The verb is already in the Past Simple, so the time must be finished. Future and habit words do not fit.', true); },
   function(){ exBuild(5, BUILD_S, 5, 'Put the words in order', 'The usual order is: who + verb + what + when. Tap the words; tap a word again to take it back.', false); },
   function(){ exGap(6, NEG, 8, 'Complete the negative sentence', 'For most verbs the negative is <i>didn’t</i> + the first form. With <i>be</i> we use <i>wasn’t</i> and <i>weren’t</i>.', true); },
   function(){ exPick(7, MAKENEG, 6, 'Choose the correct negative sentence', 'Read the positive sentence, then choose the correct negative version of it.', 'Make this sentence negative:'); },
@@ -866,7 +857,7 @@ var RUN = [
   function(){ exPick(11, WHQ, 8, 'Only one question is correct', 'Look carefully at the word order and at the verb after <i>did</i>.'); },
   exStory,
   function(){ exPick(13, CORRECT, 8, 'Only one sentence is correct', 'Positive, negative and question forms are mixed here. Two sentences in each group have a typical mistake.'); },
-  exWrite
+  exHalloween
 ];
 
 /* ---------- INTRO & FINAL ---------- */
@@ -875,9 +866,9 @@ function intro(){
   stage.innerHTML = '<p class="eyebrow">Start here</p><h2>Everything that happened <em>yesterday</em></h2>' +
     '<p class="meta">A1–A2 · about 30 minutes · works without the internet</p><hr class="rule">' +
     '<div class="hero"><figure class="shot"><img src="' + IMAGES.cottage + '" alt="An autumn cottage with chickens and a red letter box"></figure>' +
-    '<div class="txt"><p class="lead">Exercises 1 to 4 build the forms: regular verbs with -ed, irregular verbs, and was / were. ' +
-    'Exercises 5 to 8 practise statements and negatives. Exercises 9 to 12 are questions, first with <i>did</i>, then with question words. ' +
-    'The last three exercises mix everything: a story with gaps, a mistake hunt, and your own sentences.</p>' +
+    '<div class="txt"><p class="lead">Exercises 1 to 4 show when the past is needed at all: the two forms of a verb, present or past, irregular verbs and was / were. ' +
+    'Exercises 5 to 8 practise time words, statements and negatives. Exercises 9 to 12 are questions, first with <i>did</i>, then with question words. ' +
+    'At the end there is a story with gaps, a mistake hunt and a Halloween story that opens one part at a time.</p>' +
     '<div class="toc">' + TASKS.map(function(t, i){ return '<div><span>' + (i + 1) + '</span>' + t.n + '</div>'; }).join('') + '</div>' +
     '<p class="lead">The <b>Grammar table</b> button at the top is always there: all the forms, the spelling rules and a list of irregular verbs.</p>' +
     '<div class="actions"><button class="btn" id="startBtn" type="button">Start with the verb forms</button></div></div></div>';
@@ -888,7 +879,7 @@ function finalScreen(){
   var sc = total(), acc = S.items ? Math.round(S.first / S.items * 100) : 0;
   var msg = acc >= 85 ? 'Excellent work. You can use the Past Simple in statements, negatives and questions.'
           : acc >= 65 ? 'Good work. The forms are nearly there — repeat exercises 7 to 12 once more and they will be automatic.'
-          : 'Nice effort. Read the grammar table again, then try exercises 1 to 5 once more: the questions are much easier after that.';
+          : 'Nice effort. Read the grammar table again, then try exercises 1, 2 and 5 once more: they show when the past is needed at all.';
   stage.innerHTML = '<p class="eyebrow">Finished</p><h2>Past Simple — <em>complete</em></h2>' +
     '<p class="meta">All 15 exercises · ' + S.items + ' answers</p><hr class="rule">' +
     '<figure class="plate"><img src="' + IMAGES.witch + '" alt=""><figcaption>Well done</figcaption></figure>' +
