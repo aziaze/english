@@ -219,6 +219,11 @@ textarea{width:100%; min-height:80px; resize:vertical; border:1px solid var(--ru
   .picgrid{gap:6px}
 }
 
+.ptable{width:100%; border-collapse:collapse; font-size:.95rem; margin-top:6px}
+.ptable th{font-family:var(--sans); font-weight:400; font-size:.7rem; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); text-align:left; padding:4px 8px 6px 0}
+.ptable td{border-top:1px dotted var(--rule); padding:6px 8px 6px 0; font-family:var(--serif); vertical-align:top}
+.ptable td b{font-weight:400; font-style:italic; color:var(--rust)}
+
 @keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.22)}100%{transform:scale(1)}}
 @media (prefers-reduced-motion: reduce){*{animation:none!important; transition:none!important}}
 
@@ -246,6 +251,7 @@ textarea{width:100%; min-height:80px; resize:vertical; border:1px solid var(--ru
       <button type="button" class="tab" data-deck="full"><span>Full course</span><small>15 exercises · A1–A2</small></button>
       <button type="button" class="tab" data-deck="halloween"><span>Halloween</span><small>4 games · A1</small></button>
       <button type="button" class="tab" data-deck="tv"><span>TV &amp; Films</span><small>7 exercises · A1–A2</small></button>
+      <button type="button" class="tab" data-deck="pron"><span>Me, him, her…</span><small>8 exercises · A1–A2</small></button>
     </nav>
     <nav class="pills" id="pills" aria-label="Exercises"></nav>
     <div class="statline">
@@ -902,6 +908,111 @@ var TV_LIKE = {
 };
 var TV_WORDS = ['interesting','not interesting','boring','funny','great','super','beautiful','kind','nice','OK','sad','for girls','for boys'];
 
+/* ============ OBJECT PRONOUNS (TV AND FILMS) ============ */
+var TASKS_PR = [
+  {n:'I → me', title:'Two Forms — <em>I and Me</em>', meta:'7 pairs · match the two forms', plate:'tv:talkshow', cap:'Pairs'},
+  {n:'Pictures', title:'Look and Choose — <em>Him, Her, It, Them</em>', meta:'10 sentences · one picture each', plate:'tv:music', cap:'Look'},
+  {n:'Who is it?', title:'Who or What? — <em>Find the Word</em>', meta:'7 short texts · what does the pronoun mean?', plate:'tv:detective', cap:'Read'},
+  {n:'Correct?', title:'Only One Is Correct', meta:'7 items · find the correct sentence', plate:'tv:gameshow', cap:'Correct?'},
+  {n:'Replace it', title:'Replace the Words — <em>Short and Clear</em>', meta:'6 sentences · use pronouns', plate:'tv:news', cap:'Shorter'},
+  {n:'Build it', title:'Build a Sentence — <em>Word Order</em>', meta:'6 sentences · put the words in order', plate:'tv:series', cap:'Order'},
+  {n:'Movie night', title:'Movie Night — <em>A Story to Unlock</em>', meta:'7 steps · the story grows with every answer', plate:'tv:film', cap:'Story'},
+  {n:'About me', title:'About Me — <em>TV in My Life</em>', meta:'6 questions · your own answers', plate:'tv:cartoon', cap:'Me'}
+];
+
+var PR_PAIRS = [['I','me'], ['you','you'], ['he','him'], ['she','her'], ['it','it'], ['we','us'], ['they','them']];
+
+var PR_PIC = [
+  {k:'cartoon', s:'I love cartoons. I watch ___ every day.', a:'them', o:['it','they'], why:'cartoons = more than one thing → <b>them</b>.'},
+  {k:'news', s:'My grandpa loves the news. He watches ___ every evening.', a:'it', o:['them','him'], why:'the news = one thing → <b>it</b>.'},
+  {k:'talkshow', s:'Look at the two women on the sofa. Do you know ___?', a:'them', o:['her','they'], why:'two women → <b>them</b>.'},
+  {k:'music', s:'This singer is fantastic! I love ___.', a:'her', o:['she','him'], why:'the singer is a woman → <b>her</b>.'},
+  {k:'gameshow', s:'The man in the game show is very funny. Everybody likes ___.', a:'him', o:['he','her'], why:'the man → <b>him</b>.'},
+  {k:'educational', s:'The teacher in this programme is great. We learn a lot from ___.', a:'her', o:['she','them'], why:'the teacher is a woman → <b>her</b>.'},
+  {k:'detective', s:'The detective is very clever. The thief can’t run away from ___.', a:'him', o:['he','his'], why:'the detective is a man → <b>him</b>.'},
+  {k:'fantasy', s:'The old wizard is kind. The children ask ___ for help.', a:'him', o:['he','it'], why:'the wizard is a man → <b>him</b>.'},
+  {k:'romantic', s:'She loves him, and he loves ___.', a:'her', o:['she','him'], why:'he loves the woman → <b>her</b>.'},
+  {k:'horror', s:'This horror film is too scary. I can’t watch ___!', a:'it', o:['them','its'], why:'this film = one thing → <b>it</b>.'},
+  {k:'comedy', s:'The girl in the comedy laughs all the time. Look at ___!', a:'her', o:['she','hers'], why:'the girl → <b>her</b>.'},
+  {k:'scifi', s:'Aliens! The spaceship is coming for ___! (my friends and me)', a:'us', o:['we','them'], why:'my friends and me → <b>us</b>.'},
+  {k:'series', s:'My sister and I love this TV series. Mum watches it with ___.', a:'us', o:['we','them'], why:'my sister and I → <b>us</b>.'},
+  {k:'film', s:'There is a new film at the cinema. Come and watch it with ___! (I)', a:'me', o:['I','my'], why:'after <i>with</i>: I → <b>me</b>.'},
+  {k:'adventure', s:'The hero climbs the mountain. His friends follow ___.', a:'him', o:['he','them'], why:'the hero is a man → <b>him</b>.'},
+  {k:'fairytale', s:'The princess lives in the castle. The prince wants to marry ___.', a:'her', o:['she','him'], why:'the princess → <b>her</b>.'},
+  {k:'nature', s:'Butterflies are beautiful. I love watching ___ in nature programmes.', a:'them', o:['it','they'], why:'butterflies = more than one → <b>them</b>.'},
+  {k:'sports', s:'My brothers love football. They play it and they watch ___ on TV too.', a:'it', o:['them','him'], why:'football = one thing → <b>it</b>.'}
+];
+
+var PR_REF = [
+  {s:'My dad loves the news. He watches <b>it</b> every day.', a:'the news', o:['my dad','every day']},
+  {s:'Anna has two brothers. She often watches cartoons with <b>them</b>.', a:'her brothers', o:['cartoons','Anna']},
+  {s:'Tom likes his English teacher. He often talks to <b>her</b> after the lesson.', a:'his teacher', o:['Tom','the lesson']},
+  {s:'My friends and I love horror films, but Mum doesn’t let <b>us</b> watch them at night.', a:'my friends and me', o:['horror films','Mum']},
+  {s:'This game show is new. I watched <b>it</b> yesterday.', a:'the game show', o:['yesterday','I']},
+  {s:'The children love the clown in the TV series. They always laugh at <b>him</b>.', a:'the clown', o:['the children','the TV series']},
+  {s:'I don’t like documentaries, but my grandma loves <b>them</b>.', a:'documentaries', o:['my grandma','I']},
+  {s:'Kate is my best friend. I watch films with <b>her</b> every Friday.', a:'Kate', o:['films','Friday']},
+  {s:'Where is the remote control? I can’t find <b>it</b>!', a:'the remote control', o:['I','where']}
+];
+
+var PR_OK = [
+  {ok:'I like him.', bad:['I like he.', 'I like his.']},
+  {ok:'She watches cartoons with us.', bad:['She watches cartoons with we.', 'She watches cartoons with our.']},
+  {ok:'Can you watch the film with me?', bad:['Can you watch the film with I?', 'Can you watch the film with my?']},
+  {ok:'They don’t like horror films. They never watch them.', bad:['They don’t like horror films. They never watch they.', 'They don’t like horror films. They never watch it.']},
+  {ok:'Our teacher showed us a great documentary.', bad:['Our teacher showed we a great documentary.', 'Our teacher showed our a great documentary.']},
+  {ok:'My mum loves this singer. She listens to her every day.', bad:['My mum loves this singer. She listens to she every day.', 'My mum loves this singer. She listens to hers every day.']},
+  {ok:'Where is the remote? I can’t find it.', bad:['Where is the remote? I can’t find them.', 'Where is the remote? I can’t find its.']},
+  {ok:'Tell them about the film!', bad:['Tell they about the film!', 'Tell their about the film!']},
+  {ok:'He invited my sister and me to the cinema.', bad:['He invited my sister and I to the cinema.', 'He invited my sister and my to the cinema.']}
+];
+
+var PR_REPLACE = [
+  {s:'I watch <b>the news</b> with <b>my dad</b>.', a:'I watch it with him.', o:['I watch them with he.', 'I watch it with his.']},
+  {s:'<b>My sister</b> loves <b>cartoons</b>.', a:'She loves them.', o:['Her loves them.', 'She loves they.']},
+  {s:'<b>Tom and I</b> watched <b>the film</b> yesterday.', a:'We watched it yesterday.', o:['Us watched it yesterday.', 'We watched them yesterday.']},
+  {s:'Mum bought <b>my brother and me</b> popcorn.', a:'Mum bought us popcorn.', o:['Mum bought we popcorn.', 'Mum bought them popcorn.']},
+  {s:'<b>Mrs Smith</b> showed <b>the children</b> a documentary.', a:'She showed them a documentary.', o:['Her showed them a documentary.', 'She showed they a documentary.']},
+  {s:'<b>Grandpa</b> doesn’t like <b>game shows</b>.', a:'He doesn’t like them.', o:['Him doesn’t like them.', 'He doesn’t like it.']},
+  {s:'Can you watch <b>the cartoon</b> with <b>Lucy</b>?', a:'Can you watch it with her?', o:['Can you watch it with she?', 'Can you watch them with her?']}
+];
+
+var PR_BUILD = [
+  'My dad / watches / the news / with / me',
+  'I / don’t / like / them',
+  'Our teacher / showed / us / a documentary',
+  'She / loves / him',
+  'We / watched / it / with / them',
+  'Mum / bought / us / popcorn',
+  'My friends / invited / me / to the cinema'
+];
+
+var PR_STORY = {
+  title:'Movie Night',
+  end:'The End. What a great night!',
+  lead:'Choose the right pronoun and the next part of the story appears. The words in brackets tell you who or what it is.',
+  wrong:'Not that one. After a verb, or after <i>with, for, to, at</i>, we use me, you, him, her, it, us, them.',
+  finLead:'Here is the whole story. Read it aloud and find all the pronouns: me, him, her, it, us, them.',
+  steps:[
+    {t:'Last Saturday was movie night. I invited my best friends, Kate and Ben, and they came to see ___ at seven.', cue:'I', a:'me', o:['I','my'], why:'they came to see <b>me</b>.'},
+    {t:'Kate brought a big bag of popcorn. I said “Thank you!” and gave ___ a hug.', cue:'Kate', a:'her', o:['she','him'], why:'Kate → <b>her</b>.'},
+    {t:'Ben brought a new fantasy film. We all wanted to watch ___.', cue:'the film', a:'it', o:['them','him'], why:'the film → <b>it</b>.'},
+    {t:'My little brother wanted to watch it with ___ too.', cue:'Kate, Ben and me', a:'us', o:['we','them'], why:'Kate, Ben and me → <b>us</b>.'},
+    {t:'But the dragon in the film was too scary for ___, so he went to bed.', cue:'my brother', a:'him', o:['he','his'], why:'my brother → <b>him</b>.'},
+    {t:'At the end my friends said, “It was a great film! Thank you for inviting ___!”', cue:'Kate and Ben', a:'us', o:['we','them'], why:'they speak about themselves → <b>us</b>.'},
+    {t:'Next Saturday I want to visit ___ — it is movie night at their house!', cue:'Kate and Ben', a:'them', o:['they','us'], why:'Kate and Ben → <b>them</b>.'}
+  ]
+};
+
+var PR_ME = [
+  {q:'Do you like cartoons?', o:['Yes, I love them!', 'They are OK. I sometimes watch them.', 'No, I don’t like them.']},
+  {q:'Do you watch the news?', o:['Yes, I watch it every day.', 'Sometimes I watch it with my family.', 'No, I never watch it.']},
+  {q:'Who do you watch films with?', o:['With my mum — I watch films with her.', 'With my dad — I watch films with him.', 'With my friends — I watch films with them.', 'Alone. Nobody watches films with me!']},
+  {q:'Do you like horror films?', o:['Yes, I love them!', 'No, they are scary. I don’t watch them.', 'I don’t know — I never watched them.']},
+  {q:'Does your family watch game shows?', o:['Yes, we all love them!', 'My grandma watches them, but I don’t.', 'No, we don’t watch them.']},
+  {q:'What about your favourite TV series?', o:['I love it! I watch it every week.', 'I watch it with my brother. He loves it too.', 'I watch it with my sister. She loves it too.', 'I don’t have a favourite series.']}
+];
+
 var PRAISE = ['Exactly.', 'That is right.', 'Correct.', 'Well done.', 'Perfect.', 'Yes, that is it.'];
 function praise(){ return PRAISE[Math.floor(Math.random() * PRAISE.length)]; }
 
@@ -1213,7 +1324,7 @@ function exStoryUnlock(idx, H){
     var q = H.steps[i], tries = 0;
     var choices = shuffle([q.a].concat(q.o));
     stage.innerHTML = head(idx, 'Read on, one sentence at a time',
-        'Everything in this story already happened. Choose the right verb and the next part of the story appears.',
+        H.lead || 'Everything in this story already happened. Choose the right verb and the next part of the story appears.',
         'part ' + (i + 1) + ' of ' + H.steps.length) +
       '<div class="clear"></div><h3 style="margin:0">' + H.title + '</h3>' +
       '<div class="story" id="book">' + book() + '</div>' +
@@ -1235,14 +1346,14 @@ function exStoryUnlock(idx, H){
         $('#nextRow').hidden = false; $('#nextBtn').focus();
       } else {
         tries++; b.disabled = true; b.classList.add('no');
-        fb.className = 'verdict bad'; fb.innerHTML = 'Not that one. The whole story is over — which form belongs to the past?';
+        fb.className = 'verdict bad'; fb.innerHTML = H.wrong || 'Not that one. The whole story is over — which form belongs to the past?';
       }
     });
     $('#nextBtn').addEventListener('click', show);
   }
   function finish(){
     S.frac = 1; updateHUD();
-    stage.innerHTML = head(idx, H.title, 'Here is the whole story. Read it aloud — every verb is in the Past Simple.') +
+    stage.innerHTML = head(idx, H.title, H.finLead || 'Here is the whole story. Read it aloud — every verb is in the Past Simple.') +
       '<div class="clear"></div><div class="story" id="book">' + book() + '</div>' +
       '<div class="actions"><button type="button" class="btn light" id="againBtn">Read it again from the start</button>' +
       '<button type="button" class="btn" id="doneBtn">Finish</button></div>';
@@ -1658,6 +1769,115 @@ function wordListHTML(){
     '<p class="use">It was <b>funny</b>. · It wasn’t <b>interesting</b>. · I think it’s a film <b>for girls</b>.</p></div>';
 }
 
+/* ---------- PRONOUNS: match subject and object forms ---------- */
+function exMatchPron(idx){
+  var items = PR_PAIRS.slice(), n = items.length;
+  var left = shuffle(items), right = shuffle(items);
+  var selL = null, selR = null, found = 0, busy = false;
+  stage.innerHTML = head(idx, 'Match the two forms',
+      'On the left: who does it (<i>I watch</i>). On the right: the form after a verb or after <i>with, for, to</i> (<i>watch with me</i>). Tap one on the left, then its pair on the right.',
+      '<span id="mc">0</span>/' + n) +
+    '<div class="cols"><div><div class="colhead">I watch TV</div>' +
+      left.map(function(x){ return '<button type="button" class="mline" data-side="L" data-k="' + x[0] + '">' + x[0] + '</button>'; }).join('') +
+    '</div><div><div class="colhead">Watch with …</div>' +
+      right.map(function(x){ return '<button type="button" class="mline" data-side="R" data-k="' + x[0] + '">' + x[1] + '</button>'; }).join('') +
+    '</div></div><p class="verdict" id="fb"></p><div class="clear"></div>';
+  var fb = $('#fb');
+  stage.querySelector('.cols').addEventListener('click', function(e){
+    var b = e.target.closest('.mline');
+    if (!b || busy || b.classList.contains('found')) return;
+    if (b.dataset.side === 'L'){ if (selL) selL.classList.remove('sel'); selL = (selL === b) ? null : b; if (selL) selL.classList.add('sel'); }
+    else { if (selR) selR.classList.remove('sel'); selR = (selR === b) ? null : b; if (selR) selR.classList.add('sel'); }
+    if (!(selL && selR)) return;
+    if (selL.dataset.k === selR.dataset.k){
+      var pair = items.filter(function(x){ return x[0] === selL.dataset.k; })[0];
+      selL.classList.remove('sel'); selR.classList.remove('sel');
+      selL.classList.add('found'); selR.classList.add('found');
+      score(0);
+      fb.className = 'verdict good'; fb.innerHTML = '<b>' + pair[0] + '</b> watch TV — watch TV with <b>' + pair[1] + '</b>';
+      found++; S.frac = found / n; updateHUD(); $('#mc').textContent = found;
+      selL = selR = null;
+      if (found === n) later(taskComplete, 900);
+    } else {
+      busy = true; selL.classList.add('wrong'); selR.classList.add('wrong');
+      fb.className = 'verdict bad'; fb.textContent = 'These two do not go together. Try again.';
+      S.items++; updateHUD();
+      var a = selL, c = selR;
+      later(function(){ a.classList.remove('wrong', 'sel'); c.classList.remove('wrong', 'sel'); selL = selR = null; busy = false; }, 700);
+    }
+  });
+}
+
+/* ---------- PRONOUNS: picture + sentence with a gap ---------- */
+function exGapPic(idx, pool, count, sub, lead){
+  var qs = shuffle(pool).slice(0, count), i = 0;
+  function show(){
+    var q = qs[i], tries = 0, choices = shuffle([q.a].concat(q.o));
+    stage.innerHTML = head(idx, sub, lead, (i + 1) + ' of ' + qs.length, '') +
+      '<img class="picture" src="' + TVIMG[q.k] + '" alt="">' +
+      '<p class="sentence">' + q.s.replace('___', '<span class="gap" id="gap">?</span>') + '</p>' +
+      '<div class="opts row">' + choices.map(function(o){ return '<button type="button" class="opt center" data-o="' + esc(o) + '"><span class="serif">' + o + '</span></button>'; }).join('') + '</div>' +
+      '<p class="verdict" id="fb"></p>' + nextRow(i + 1 < qs.length ? 'Next' : 'Finish exercise');
+    var fb = $('#fb');
+    stage.querySelector('.opts').addEventListener('click', function(e){
+      var b = e.target.closest('.opt'); if (!b || b.disabled) return;
+      if (b.dataset.o === q.a){
+        Array.prototype.forEach.call(stage.querySelectorAll('.opt'), function(x){ x.disabled = true; });
+        b.classList.add('yes');
+        var g = $('#gap'); g.textContent = q.a; g.classList.add('filled');
+        score(tries);
+        fb.className = 'verdict good'; fb.innerHTML = praise() + ' ' + q.why;
+        i++; S.frac = i / qs.length; updateHUD();
+        $('#nextRow').hidden = false; $('#nextBtn').focus();
+      } else {
+        tries++; b.disabled = true; b.classList.add('no');
+        fb.className = 'verdict bad'; fb.innerHTML = 'Not this one. Who or what is it? A man, a woman, one thing or more than one?';
+      }
+    });
+    $('#nextBtn').addEventListener('click', function(){ if (i < qs.length) show(); else taskComplete(); });
+  }
+  show();
+}
+
+/* ---------- PRONOUNS: about me ---------- */
+function exAboutMe(idx){
+  var i = 0, lines = [];
+  function show(){
+    var q = PR_ME[i];
+    stage.innerHTML = head(idx, q.q, 'Choose the answer that is true for you. Look at the small words: <i>them, it, her, him, me</i>.', (i + 1) + ' of ' + PR_ME.length) +
+      '<div class="clear"></div><div class="opts">' + q.o.map(function(o, k){ return '<button type="button" class="opt" data-k="' + k + '"><span class="serif">' + o + '</span></button>'; }).join('') + '</div>' +
+      (lines.length ? '<div class="story">' + lines.map(function(l){ return '<p>' + l + '</p>'; }).join('') + '</div>' : '');
+    stage.querySelector('.opts').addEventListener('click', function(e){
+      var b = e.target.closest('.opt'); if (!b) return;
+      lines.push('<i>' + q.q + '</i> — ' + q.o[+b.dataset.k].replace(/\b(me|him|her|it|us|them)\b/g, '<b>$1</b>'));
+      addPts(5); toast('+5');
+      i++; S.frac = i / (PR_ME.length + 1); updateHUD();
+      if (i < PR_ME.length) show(); else finish();
+    });
+  }
+  function finish(){
+    S.frac = 1; updateHUD();
+    stage.innerHTML = head(idx, 'TV in my life', 'Read your answers aloud. Then write two sentences of your own with <i>him, her, it</i> or <i>them</i>.', '', '') +
+      '<div class="story">' + lines.map(function(l){ return '<p>' + l + '</p>'; }).join('') + '</div>' +
+      '<p class="model">My favourite cartoon is “Peppa Pig”. I watch it with my brother. He loves it too.</p>' +
+      '<textarea id="mine" placeholder="My favourite … is … I watch it with …" aria-label="Your sentences"></textarea>' +
+      '<div class="actions"><button type="button" class="btn" id="doneBtn">Finish</button>' +
+      '<button type="button" class="btn light" id="againBtn">Answer again</button></div>';
+    $('#againBtn').addEventListener('click', function(){ S.frac = 0; updateHUD(); exAboutMe(idx); });
+    $('#doneBtn').addEventListener('click', taskComplete);
+  }
+  show();
+}
+
+function pronTableHTML(){
+  var ex = {I:'Watch it with <b>me</b>!', you:'I can see <b>you</b>.', he:'I like <b>him</b>.', she:'We love <b>her</b> songs. We love <b>her</b>.', it:'I watched <b>it</b> yesterday.', we:'Mum watches TV with <b>us</b>.', they:'Cartoons? I love <b>them</b>!'};
+  return '<div class="row"><h4>Two forms of each word</h4><p class="form">Before the verb: who does it · after the verb or after <i>with, for, to, at</i></p>' +
+    '<table class="ptable"><tr><th>who does it</th><th>after a verb</th><th>example</th></tr>' +
+    PR_PAIRS.map(function(p){ return '<tr><td>' + p[0] + '</td><td><b>' + p[1] + '</b></td><td>' + ex[p[0]] + '</td></tr>'; }).join('') + '</table></div>' +
+    '<div class="row"><h4>Which one?</h4><p class="ex">a man → <b>him</b> · a woman, a girl → <b>her</b> · one thing (a film, the news) → <b>it</b> · more than one (cartoons, my friends) → <b>them</b></p>' +
+    '<p class="use"><b>She</b> loves <b>him</b>. · <b>We</b> watched <b>it</b> with <b>them</b>. · Not: <s>with I</s>, <s>like he</s>, <s>watch they</s>.</p></div>';
+}
+
 /* ---------- task list ---------- */
 var RUN_FULL = [
   exMatch,
@@ -1690,6 +1910,18 @@ var RUN_EASY = [
 
 var RUN_HW = [exCostume, exMadLibs, exWhichCat, exQuiz];
 
+var RUN_PR = [
+  function(){ exMatchPron(0); },
+  function(){ exGapPic(1, PR_PIC, 10, 'Look at the picture and choose', 'Who or what is it? A man → <i>him</i>, a woman → <i>her</i>, one thing → <i>it</i>, more than one → <i>them</i>.'); },
+  function(){ exPick(2, PR_REF, 7, 'What does the word in bold mean?', 'Read the two sentences. The pronoun in bold stands for a word in the first sentence. Which word?', 'Read:'); },
+  function(){ exPick(3, PR_OK, 7, 'Only one sentence is correct', 'After a verb, or after <i>with, for, to</i>, we use me, him, her, it, us, them — not I, he, she, we, they.'); },
+  function(){ exPick(4, PR_REPLACE, 6, 'Replace the words in bold', 'Use pronouns: the sentence gets short. Who does it → he, she, we, they. After the verb → him, her, it, us, them.', 'Make it shorter:', true); },
+  function(){ exBuild(5, PR_BUILD, 6, 'Put the words in order', 'Who does it + verb + him / her / it / us / them + the rest. Tap a word again to take it back.', false,
+    'Not yet. Start with who does it, then the verb, then the pronoun.'); },
+  function(){ exStoryUnlock(6, PR_STORY); },
+  function(){ exAboutMe(7); }
+];
+
 var RUN_TV = [
   function(){ exPicture(0, TV_PROG, 8, 'What is on TV?', 'Look at the picture and choose the TV programme.'); },
   function(){ exPicture(1, TV_FILMS, 8, 'What kind of film is it?', 'Look at the picture and choose the type of film.'); },
@@ -1708,6 +1940,7 @@ var PS_TITLE = 'Past Simple — <em>Yesterday, Last Week, Ago</em>';
 var DECKS = {
   easy: {tasks:TASKS_EASY, run:RUN_EASY, meta:'8 short exercises · A1 · time words, questions and short answers', eyebrow:'Grammar Practice', title:PS_TITLE},
   full: {tasks:TASKS_FULL, run:RUN_FULL, meta:'15 exercises · A1–A2 · statements, negatives and questions', eyebrow:'Grammar Practice', title:PS_TITLE},
+  pron: {tasks:TASKS_PR, run:RUN_PR, meta:'8 exercises · A1–A2 · me, you, him, her, it, us, them — with TV and films', eyebrow:'Grammar Practice', title:'Object Pronouns — <em>Watch It With Me!</em>'},
   tv: {tasks:TASKS_TV, run:RUN_TV, meta:'7 exercises · A1–A2 · TV programmes, types of films and words to describe them', eyebrow:'Vocabulary', title:'TV and Films — <em>What Can You Watch?</em>'},
   halloween: {tasks:TASKS_HW, run:RUN_HW, meta:'4 games · A1 · costumes, cats, a silly story and a quiz', eyebrow:'Halloween Games', title:'Halloween — <em>Costumes, Cats and Stories</em>'}
 };
@@ -1727,7 +1960,7 @@ function setDeck(key){
   $('#deckMeta').textContent = d.meta;
   $('#deckEyebrow').textContent = d.eyebrow; $('#deckTitle').innerHTML = d.title;
   $('#gtBtn').hidden = key === 'halloween';
-  $('#gtBtn').textContent = key === 'tv' ? 'Word list' : 'Grammar table';
+  $('#gtBtn').textContent = key === 'tv' ? 'Word list' : key === 'pron' ? 'Pronoun table' : 'Grammar table';
   Array.prototype.forEach.call(document.querySelectorAll('.tab'), function(t){ t.classList.toggle('cur', t.dataset.deck === key); });
   updateHUD();
   if (S.screen === 'final') finalScreen();
@@ -1749,6 +1982,18 @@ function introHW(){
     '<div class="actions"><button class="btn" id="startBtn" type="button">Make my costume</button></div></div></div>';
   $('#startBtn').addEventListener('click', function(){ startTask(0); });
 }
+function introPR(){
+  stage.innerHTML = '<p class="eyebrow">Start here</p><h2>Watch it with <em>me!</em></h2>' +
+    '<p class="meta">A1–A2 · about 25 minutes · the words from TV and films</p><hr class="rule">' +
+    '<div class="hero"><figure class="shot"><img src="' + TVIMG.talkshow + '" alt=""></figure>' +
+    '<div class="txt"><p class="lead">Every person has two words: <i>I — me, he — him, she — her, we — us, they — them</i>. ' +
+      'The first one does the action: <b>She</b> watches TV. The second one comes after the verb or after <i>with, for, to</i>: I watch TV with <b>her</b>. ' +
+      'All the sentences are about TV programmes and films.</p>' +
+    '<div class="toc">' + TASKS.map(function(t, i){ return '<div><span>' + (i + 1) + '</span>' + t.n + '</div>'; }).join('') + '</div>' +
+    '<p class="lead">The <b>Pronoun table</b> button at the top shows all the forms with examples.</p>' +
+    '<div class="actions"><button class="btn" id="startBtn" type="button">Start with the two forms</button></div></div></div>';
+  $('#startBtn').addEventListener('click', function(){ startTask(0); });
+}
 function introTV(){
   stage.innerHTML = '<p class="eyebrow">Start here</p><h2>What can you <em>watch?</em></h2>' +
     '<p class="meta">A1–A2 · about 20 minutes · new words with pictures</p><hr class="rule">' +
@@ -1764,6 +2009,7 @@ function intro(){
   S.token++; S.lv = -1; S.screen = 'intro'; S.frac = 0; updateHUD();
   if (deckKey === 'halloween'){ introHW(); return; }
   if (deckKey === 'tv'){ introTV(); return; }
+  if (deckKey === 'pron'){ introPR(); return; }
   var isEasy = deckKey === 'easy';
   stage.innerHTML = '<p class="eyebrow">Start here</p><h2>' + (isEasy ? 'A first look at <em>yesterday</em>' : 'Everything that happened <em>yesterday</em>') + '</h2>' +
     '<p class="meta">' + (isEasy ? 'A1 · about 15 minutes · nothing to write, just tap' : 'A1–A2 · about 30 minutes · works without the internet') + '</p><hr class="rule">' +
@@ -1783,6 +2029,7 @@ function finalScreen(){
   var sc = total(), acc = S.items ? Math.round(S.first / S.items * 100) : 0;
   if (deckKey === 'halloween'){ finalHW(sc); return; }
   if (deckKey === 'tv'){ finalTV(sc, acc); return; }
+  if (deckKey === 'pron'){ finalPR(sc, acc); return; }
   var msg = acc >= 85 ? 'Excellent work. You can use the Past Simple in statements, negatives and questions.'
           : acc >= 65 ? 'Good work. The forms are nearly there — run the set once more and they will be automatic.'
           : 'Nice effort. Read the grammar table again, then start the set from the beginning: it gets much easier after the time words.';
@@ -1819,6 +2066,23 @@ function finalHW(sc){
   });
 }
 
+function finalPR(sc, acc){
+  stage.innerHTML = '<p class="eyebrow">Finished</p><h2>Object pronouns — <em>complete</em></h2>' +
+    '<p class="meta">All ' + N + ' exercises · ' + S.items + ' answers</p><hr class="rule">' +
+    '<figure class="plate"><img src="' + TVIMG.series + '" alt=""><figcaption>Well done</figcaption></figure>' +
+    '<p class="scorebig">' + sc + '</p><p class="lead"><b>' + acc + '%</b> correct on the first try.</p>' +
+    '<p class="lead">' + (acc >= 80 ? 'Excellent! You use me, him, her, it, us and them correctly.' : 'Good work. Look at the pronoun table again and play the set once more — it gets easier every time.') + '</p>' +
+    '<div class="gt"><div class="row"><h4>Remember</h4>' +
+    '<p class="ex">I → <b>me</b> · you → <b>you</b> · he → <b>him</b> · she → <b>her</b> · it → <b>it</b> · we → <b>us</b> · they → <b>them</b><br>' +
+    '<b>She</b> loves cartoons. I watch them with <b>her</b>.<br>Not: <s>with I</s>, <s>like he</s> — but: with <b>me</b>, like <b>him</b>.</p></div></div>' +
+    '<div class="actions"><button class="btn" id="againBtn" type="button">Start again with new questions</button>' +
+    '<button class="btn light" id="wlBtn2" type="button">Pronoun table</button></div><div class="clear"></div>';
+  $('#againBtn').addEventListener('click', function(){
+    for (var k = 0; k < N; k++){ S.pts[k] = 0; S.done[k] = false; }
+    S.first = 0; S.items = 0; startTask(0);
+  });
+  $('#wlBtn2').addEventListener('click', openGT);
+}
 function finalTV(sc, acc){
   stage.innerHTML = '<p class="eyebrow">Finished</p><h2>TV and Films — <em>complete</em></h2>' +
     '<p class="meta">All ' + N + ' exercises · ' + S.items + ' answers</p><hr class="rule">' +
@@ -1839,8 +2103,9 @@ function finalTV(sc, acc){
 }
 
 function openGT(){
-  if (deckKey === 'tv'){
-    if (!$('#wlBody').innerHTML) $('#wlBody').innerHTML = wordListHTML();
+  if (deckKey === 'tv' || deckKey === 'pron'){
+    $('#wlTitle').innerHTML = deckKey === 'tv' ? 'TV and films — <em>word list</em>' : 'Object pronouns — <em>at a glance</em>';
+    $('#wlBody').innerHTML = deckKey === 'tv' ? wordListHTML() : pronTableHTML();
     $('#wlModal').hidden = false; $('#wlClose').focus(); return;
   }
   $('#gtModal').hidden = false; $('#gtClose').focus();
